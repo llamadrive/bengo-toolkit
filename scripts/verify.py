@@ -369,10 +369,18 @@ def check_repo_contracts(r: Report) -> None:
     template_install = ROOT / "commands" / "template-install.md"
     if template_install.exists():
         ti_text = template_install.read_text(encoding="utf-8")
-        if "デフォルトは `case`" in ti_text:
-            r.passed("template-install.md: default scope documented as case")
+        # v3.7.6: ユーザー向け文言は「この案件のみ」に統一。レガシーな
+        # "デフォルトは `case`" 表現も保険として受け入れる（同じ意味）。
+        if (
+            "デフォルトは「この案件のみ」" in ti_text
+            or "既定は **「この案件のみ」**" in ti_text
+            or "デフォルトは `case`" in ti_text
+        ):
+            r.passed("template-install.md: default scope documented as 'この案件のみ' (case)")
         else:
-            r.failed("template-install.md: default scope drift (expected case)")
+            r.failed(
+                "template-install.md: default scope drift (expected 'この案件のみ' or case)"
+            )
     else:
         r.failed("commands/template-install.md: not found")
 
