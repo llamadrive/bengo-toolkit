@@ -4,6 +4,19 @@
 
 ## [Unreleased]
 
+## [3.7.5] - 2026-05-14
+
+### Fixed
+
+- **`.agent` 出力の `memory.observations` が schema 違反になる不具合** (#18) —
+  `skills/family-tree/SKILL.md` と `skills/lawsuit-analysis/SKILL.md` の AI
+  生成ドラフト警告のテンプレートが `{id, text}` のオブジェクトを観測値として
+  示していたが、upstream agent-format v0.1 の `AgentMemory.observations` は
+  `array<string>` を要求する（`schemas/agent.schema.json`）。オブジェクト形式は
+  validation で reject され、公式 web viewer
+  （`knorq-ai.github.io/agent-format`）で「Schema validation failed」になる。
+  両 SKILL.md の例文をプレーン文字列配列に差し替えた。
+
 ## [3.7.4] - 2026-05-13
 
 ### Fixed

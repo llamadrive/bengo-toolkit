@@ -278,12 +278,16 @@ persons 配列の中身だけで表現する。
 Write ツールで `family_tree_{YYYY-MM-DD}.agent` として作業ディレクトリに出力する。
 
 **AI 生成ドラフト警告（必須、全出力に含める）:** `.agent` の `memory.observations`
-の最初に以下のエントリを必ず挿入する（renderer が最上位にバナー表示するため）:
+の最初に以下の **プレーン文字列** を必ず挿入する（renderer が最上位にバナー表示するため）。
+upstream の `AgentMemory.observations` は `array<string>` であり、`{id, text}`
+のようなオブジェクト形式は schema validation で reject される（issue #18）:
 
 ```json
-{
-  "id": "obs-ai-draft",
-  "text": "⚠ AI が戸籍から抽出したドラフトです。裁判所・法務局提出前に、弁護士が戸籍原本と照合して検証してください（Step 3.5 の source_ref は `.agent` には含まれません）。"
+"memory": {
+  "observations": [
+    "⚠ AI が戸籍から抽出したドラフトです。裁判所・法務局提出前に、弁護士が戸籍原本と照合して検証してください（Step 3.5 の source_ref は `.agent` には含まれません）。"
+  ],
+  "preferences": {}
 }
 ```
 
