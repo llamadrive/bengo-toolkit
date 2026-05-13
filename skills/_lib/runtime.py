@@ -194,11 +194,17 @@ def cowork_blocked_message(missing: tuple) -> str:
 
 
 def _probe_local_fs() -> bool:
-    """`~/.claude-bengo/` 配下に書込テスト。"""
+    """`~/.claude-bengo/` 配下に書込テスト。
+
+    probe ファイル名に pid を含めることで、並列に走る subprocess 間の
+    write/unlink race を避ける。Windows では同一パスへの並行 open/unlink
+    が ERROR_SHARING_VIOLATION を投げ、probe が偽 False を返して surface
+    判定を cowork に誤らせる事象が観測された（issue #16）。
+    """
     try:
         base = Path.home() / ".claude-bengo"
         base.mkdir(mode=0o700, exist_ok=True)
-        probe = base / ".runtime-probe.tmp"
+        probe = base / f".runtime-probe-{os.getpid()}.tmp"
         probe.write_text("ok", encoding="utf-8")
         probe.unlink(missing_ok=True)
         return True

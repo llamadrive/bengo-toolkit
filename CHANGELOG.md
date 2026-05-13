@@ -9,14 +9,21 @@
 ### Fixed
 
 - **Windows での audit.py 並列書込が稀に取りこぼす不具合** (#16) —
-  `_FileLock` は Windows で `msvcrt.locking(LK_LOCK, 1)` を使っていたが、
-  kernel 提供の retry が 10 回 / 1 秒間隔（合計 10 秒）で諦めて IOError を
-  投げる。CI worker の 10-way contention 下ではこの budget を使い切って
-  lock 取得に失敗し、`_FileLock` が fail-closed で `RuntimeError` を投げ、
-  subprocess は exit 1 で終わるが、呼び出し側が exit code を見ない経路で
-  record が静かに drop していた。`LK_NBLCK`（non-blocking）に切替え、
-  Python 側で 30 秒 budget + 10〜50ms exponential backoff で retry する
-  ようにした。Linux / macOS の `fcntl.flock(LOCK_EX)` 経路は影響なし。
+  真因は audit.py の lock ではなく、v3.7.3 で導入した
+  `runtime._probe_local_fs()` のレース。同関数は `~/.claude-bengo/.runtime-probe.tmp`
+  への write→unlink で local FS が使えるかを判定するが、全プロセスが
+  **同じパス**を使うため Windows で並行 open/unlink が `ERROR_SHARING_VIOLATION`
+  を投げ、probe が偽 False を返して surface を cowork と誤認した。
+  `cmd_record` は `_is_cowork()` が True なら silent exit 0 で抜けるため、
+  fail=0・record だけが消える症状（`ok=99, total=99`）となっていた。
+  probe ファイル名に `os.getpid()` を含めて per-PID 化し、レース自体を
+  消した。
+- **audit.py `_FileLock` の lock-budget を 30 秒に拡張**（defense in depth）—
+  Windows の `msvcrt.locking(LK_LOCK, 1)` は kernel 提供の retry が 10 回 /
+  1 秒間隔（合計 10 秒）で諦めて IOError を投げる。CI worker の重 contention
+  下で budget 不足になる潜在的経路を、`LK_NBLCK`（non-blocking）+ Python
+  側 30 秒 budget + 10〜50ms exponential backoff で潰した。Linux / macOS
+  の `fcntl.flock(LOCK_EX)` 経路は影響なし。
 
 ## [3.7.3] - 2026-05-13
 
