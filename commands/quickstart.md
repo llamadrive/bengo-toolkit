@@ -78,10 +78,10 @@ Bash: python3 skills/_lib/menu.py print-quickstart "$ARGUMENTS"
 消える）で処理してしまうと監査ログが失われるため。
 
 以下を実行前に毎回確認する:
-- 入力パスが `fixtures/` で始まっていない場合は **スキル実行を拒否** し、
-  「quickstart モードでは fixtures/ のサンプルのみ使える。自分のファイルは
-  `cd ~/cases/...` で案件フォルダに入ってから通常コマンドで実行してほしい」
-  と案内する
+- 入力パスがプラグイン同梱サンプル（`${CLAUDE_PLUGIN_ROOT}/fixtures/` 配下）で
+  なければ **スキル実行を拒否** し、「お試しでは同梱サンプルのみ使える。
+  自分のファイルを試したい場合は `cd ~/cases/<案件名>` で案件フォルダに移ってから
+  通常のコマンドで実行してほしい」と案内する
 - `cbengo-demo` 系 mktemp は quickstart 専用。`/family-tree`, `/template-fill`
   等がこのフォルダ内で実行されていることを確認（workspace.py resolve で
   `/tmp/cbengo-demo-*` にマッチするパスであること）

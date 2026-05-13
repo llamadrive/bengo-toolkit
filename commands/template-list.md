@@ -76,7 +76,7 @@ python3 skills/_lib/workspace.py templates
   /template-create --scope firm  — 事務所共有に登録（個人情報検出時は自動拒否）
   /template-create --scope user  — この PC の全案件で共通に登録（個人情報検出時は自動拒否）
   /template-install              — 同梱書式をインストール（既定: この案件のみ）
-  /template-promote <id> --to firm  — 案件→事務所共有へ移動（個人情報のコードレベルチェック）
+  /template-promote <id> --to firm  — 案件→事務所共有へ移動（個人情報を自動チェック）
   /template-demote <id> --from firm — 事務所共有→案件にコピー
   /template-firm-setup           — 事務所共有フォルダのローカルパスを 1 度だけ設定
 ```

@@ -4,6 +4,29 @@
 
 ## [Unreleased]
 
+## [3.7.7] - 2026-05-14
+
+### Fixed
+
+- **v3.7.6 で取りこぼした user-facing 文字列をプレーン日本語に統一** —
+  `skills/_lib/template_lib.py:489` の `PIIFoundError` メッセージ（`PII` /
+  `user スコープ` / `case スコープ` が混在）を「クライアントの個人情報」
+  「この PC の全案件で共通」「この案件のみ」へ書き換え。`workspace.py` の
+  `firm-setup --unset` 戻り値 JSON message・引数欠落時の error message も
+  「事務所共有」「保存先フォルダのパス」表現に統一。`firm-setup` 実行時に
+  自動生成される `README.md` も同様に書き直した。
+- **`/quickstart` の同梱サンプル外パス拒否メッセージ** — 内部実装の
+  `fixtures/` パスをユーザーに露出していたのを「お試しでは同梱サンプルのみ
+  使える」表現に変更。
+- **`first_run.py` 初回案内の HMAC 言及を平易化** — 「HMAC チェーン付き」を
+  「改ざん検知付き」に置換。仕組み名ではなく目的をユーザーへ示す。
+- **`/template-list` の操作一覧** — 「個人情報のコードレベルチェック」を
+  「個人情報を自動チェック」に書き直し。
+- **`tests/menu_surface.sh` の Cowork 漏れ検査パターン** — quickstart の
+  ブロック対象 4 件のうち 2 件（template-fill / lawsuit-analysis）が
+  v3.7.6 の文言と合致せず trivially pass していたのを、現行タイトルの
+  サブストリングに更新して実効性のあるアサートに直した。
+
 ## [3.7.6] - 2026-05-14
 
 ### Changed

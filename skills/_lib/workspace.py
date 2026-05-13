@@ -776,15 +776,15 @@ def _cmd_firm_setup(args: argparse.Namespace) -> int:
     if args.unset:
         removed = unset_firm_templates_path()
         print(json.dumps(
-            {"unset": removed, "message": "firm スコープ設定を削除した。" if removed
-             else "firm スコープ設定はもともと無かった。"},
+            {"unset": removed, "message": "「事務所共有」の保存先設定を削除した。" if removed
+             else "「事務所共有」の保存先設定はもともと無かった。"},
             ensure_ascii=False,
         ))
         return 0
 
     if not args.path:
         print(json.dumps(
-            {"error": "path 引数が必要。`/template-firm-setup <local_path>` で指定。"},
+            {"error": "保存先フォルダのパスが必要。`/template-firm-setup <フォルダのパス>` で指定。"},
             ensure_ascii=False,
         ), file=sys.stderr)
         return 1
@@ -821,12 +821,12 @@ def _cmd_firm_setup(args: argparse.Namespace) -> int:
     if not readme.exists():
         try:
             readme.write_text(
-                "このフォルダは claude-bengo の firm スコープ用テンプレート共有ディレクトリ。\n"
+                "このフォルダは bengo-toolkit の「事務所共有」テンプレート保存場所。\n"
                 "\n"
                 "- このフォルダのファイルは事務所全員（このフォルダにアクセスできる全員）\n"
-                "  から見える。**PII（クライアント名・連絡先・口座番号等）を含むファイルを\n"
-                "  置かない**。\n"
-                "- /template-promote --to firm でアップロード時、PII スキャンが自動的に\n"
+                "  から見える。**クライアントの個人情報（氏名・連絡先・口座番号等）を\n"
+                "  含むファイルを置かない**。\n"
+                "- /template-promote --to firm でアップロード時、個人情報の自動チェックが\n"
                 "  かかる。検出時はアップロードがブロックされる。\n"
                 "- このフォルダ内の YAML / XLSX を直接編集しないでほしい。\n"
                 "  /template-promote または /template-create --scope firm を経由すること。\n",

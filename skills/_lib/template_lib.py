@@ -486,8 +486,9 @@ class PIIFoundError(ValueError):
         )
         more = f" 他 {len(findings) - 5} 件" if len(findings) > 5 else ""
         super().__init__(
-            f"{xlsx_path.name} に PII らしき記述が {len(findings)} 件検出された ({preview}{more})。"
-            " user スコープへの保存を拒否する。case スコープで登録するか、XLSX 側で PII を削除してから再実行してほしい。"
+            f"{xlsx_path.name} にクライアントの個人情報のような記述が {len(findings)} 件検出された ({preview}{more})。"
+            " 「この PC の全案件で共通」への保存は拒否する。"
+            " 「この案件のみ」で登録するか、XLSX 側で該当箇所を削除してから再実行してほしい。"
         )
 
 

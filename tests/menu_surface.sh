@@ -42,9 +42,13 @@ else
 fi
 
 # /quickstart in cowork: must NOT include forbidden demo items.
+# Patterns must match the current QUICKSTART_OPTIONS titles for the 4 blocked demos:
+#   family-tree       → 「戸籍から相続関係説明図を描く」
+#   template-fill     → 「PDF から XLSX 書式へ自動入力」
+#   typo-check        → 「準備書面の校正」
+#   lawsuit-analysis  → 「訴状と答弁書から事件分析レポート」
 out_qs=$(CLAUDE_CODE_IS_COWORK=1 NO_COLOR=1 python3 skills/_lib/menu.py print-quickstart --plain)
-# blocked: family-tree, template-fill, typo-check, lawsuit-analysis
-if ! echo "$out_qs" | grep -E '戸籍|テンプレート入力|準備書面の校正|訴訟分析' >/dev/null; then
+if ! echo "$out_qs" | grep -E '戸籍から相続関係|XLSX 書式へ自動入力|準備書面の校正|事件分析レポート' >/dev/null; then
   ok "print-quickstart (cowork) has no blocked demo items"
 else
   ng "print-quickstart (cowork) leaks blocked demo item"
