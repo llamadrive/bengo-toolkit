@@ -17,27 +17,27 @@ Bash: python3 skills/_lib/workspace.py check --require local_fs
 
 $ARGUMENTS の指定方法:
 - 引数なし: 利用可能な同梱テンプレートを一覧表示する
-- テンプレート ID: `/template-install creditor-list` — 指定テンプレートをインストール（既定: **この案件のみ**）
-- `--scope firm` 付き: `/template-install creditor-list --scope firm` — 事務所全員で共有（要 `/template-firm-setup`）
-- `--scope user` 付き: `/template-install creditor-list --scope user` — この端末・lawyer 全案件
+- テンプレート ID: `/template-install creditor-list` — 指定テンプレートをインストール（既定: **「この案件のみ」**）
+- `--scope firm` 付き: `/template-install creditor-list --scope firm` — 「事務所共有」（要 `/template-firm-setup`）
+- `--scope user` 付き: `/template-install creditor-list --scope user` — 「この PC の全案件で共通」
 - `--replace` 付き: `/template-install creditor-list --replace` — 既存を上書き
 
-## スコープの考え方
+## 保存場所の考え方
 
-既定は **case スコープ**（この案件フォルダのみ）。他案件と混線させる事故を
-避けるため、明示的にスコープを指定しない限り case に置く。
+既定は **「この案件のみ」**（現在の案件フォルダの中にだけ保存）。他の案件と混線させる
+事故を避けるため、明示的に保存場所を指定しない限り案件側に置く。
 
 事務所全員で使い回したい標準書式は `--scope firm`（要 `/template-firm-setup`）。
-端末・lawyer 限定で使い回したい場合は `--scope user`。判断に迷ったら case に
-入れておき、後で `/template-promote --to firm` または `--to user` で昇格してよい。
+この PC 上の全案件で共通に使いたい場合は `--scope user`。判断に迷ったら案件側に
+入れておき、後で `/template-promote --to firm` または `--to user` で移動できる。
 
 ## ワークフロー
 
-### Step 0: スコープの確認
+### Step 0: 保存場所の確認
 
-デフォルトは `case`（この案件フォルダのみ）。`--scope user` が指定されていれば
-user 側に入れる。どちらのスコープでもインストール先ディレクトリは自動作成される
-（workspace 未初期化でも可）。
+デフォルトは「この案件のみ」（現在の案件フォルダの中にだけ保存）。`--scope user` が
+指定されていれば「この PC の全案件で共通」の領域に入れる。どちらの場合も保存先
+ディレクトリは自動作成される（案件フォルダ未初期化でも可）。
 
 ### Step 1: 引数の解析
 
@@ -68,28 +68,29 @@ python3 skills/_lib/audit.py record --skill template-install --event file_write 
 
 ### Step 4: 完了案内
 
-インストール成功時、ユーザーに以下を案内する（scope に応じて文言を変える）:
+インストール成功時、ユーザーに以下を案内する（保存場所に応じて文言を変える）:
 
-**scope=user の場合:**
+**`--scope user` の場合:**
 ```
-テンプレート '{title}' をユーザースコープにインストールした（この端末の全案件で使える）。
+テンプレート '{title}' を「この PC の全案件で共通」にインストールした
+（この PC のすべての案件から使える）。
   YAML: {yaml_dst}
   XLSX: {xlsx_dst}
 
 使い方:
-  /template-list       — テンプレート一覧（user + この案件）
-  /template-fill       — ソース文書からこのテンプレートにデータを入力
+  /template-list       — テンプレート一覧（共通領域 + この案件）
+  /template-fill       — 元のファイルからこのテンプレートにデータを入力
 ```
 
-**scope=case の場合:**
+**`--scope case` の場合:**
 ```
 テンプレート '{title}' をこの案件フォルダにインストールした（この案件限定）。
   YAML: {yaml_dst}
   XLSX: {xlsx_dst}
 
 使い方:
-  /template-list       — テンプレート一覧（user + この案件）
-  /template-fill       — ソース文書からこのテンプレートにデータを入力
+  /template-list       — テンプレート一覧（共通領域 + この案件）
+  /template-fill       — 元のファイルからこのテンプレートにデータを入力
 ```
 
 ## 利用可能な同梱テンプレート（v2.3.0 現在）
@@ -128,7 +129,7 @@ python3 skills/_lib/audit.py record --skill template-install --event file_write 
 
 ## エラーハンドリング
 
-- **workspace 未初期化**: case スコープなら現在のフォルダに `./.claude-bengo/` を自動作成して続行
+- **案件フォルダ未初期化**: 「この案件のみ」を選んだ場合は現在のフォルダに `./.claude-bengo/` を自動作成して続行
 - **テンプレート ID が無効**: 同梱リストを表示して正しい ID を案内
 - **既存と衝突**: `--replace` の有無を確認、ユーザーの承諾を得てから上書き
 - **ファイル欠落**: レジストリと同梱ファイルの不整合。プラグインの再インストールを提案（`/plugin install bengo-toolkit@llamadrive`）

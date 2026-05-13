@@ -1,17 +1,17 @@
 ---
-description: 現在の案件フォルダ（workspace）の状態を表示する
+description: 現在の案件フォルダの状態を表示する
 allowed-tools: Read, Bash(python3 skills/_lib/workspace.py:*), Bash(python3 skills/_lib/audit.py verify:*)
 ---
 
-現在の CWD（または指定ディレクトリ）の workspace 状態を要約する。bengo-toolkit
+現在のフォルダ（または指定フォルダ）の案件状態を要約する。bengo-toolkit
 は案件フォルダごとに `.claude-bengo/` を持つ（ディレクトリ名は v3.7.0 でのリネーム
 時にも互換性のため据え置き）。このコマンドはその中身を読み、
 監査ログの件数・テンプレート数・メタデータを可視化する。
 
 ## $ARGUMENTS
 
-- **引数なし**: 現在の workspace を対象に
-- **`--verify`**: ハッシュチェーンの整合性も併せて検証する
+- **引数なし**: 現在の案件フォルダを対象に
+- **`--verify`**: 改ざん検知ログ（ハッシュチェーン）の整合性も併せて検証する
 
 ## Step 0: 動作環境ガード
 
@@ -25,7 +25,7 @@ Bash: python3 skills/_lib/workspace.py check --require local_fs
 
 ## 動作
 
-### Step 1: workspace 解決
+### Step 1: 案件フォルダ解決
 
 ```bash
 python3 skills/_lib/workspace.py info
@@ -75,7 +75,7 @@ python3 skills/_lib/workspace.py info
 `python3 skills/_lib/audit.py verify` を実行し、結果を末尾に追加:
 
 ```
-  ハッシュチェーン検証: OK
+  改ざん検知ログ（ハッシュチェーン）検証: OK
     subtotal: ok=127, fail=0, legacy=0, total=127
 ```
 

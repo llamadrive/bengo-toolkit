@@ -147,18 +147,18 @@ v3.0.0 で旧 matter ID 概念は廃止された。**フォルダ = 案件**。
   全 23 コマンド（カテゴリ別）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【案件フォルダ / workspace】
+【案件フォルダ】
   /case-info        現在の案件フォルダの状態を表示
   /audit-config     監査ログ設定（記録先・HMAC・クラウド同期）
 
-【テンプレート / template】
+【テンプレート】
   /template-install 同梱 31 書式から選択してインストール
   /template-create  独自 XLSX 書式を登録
   /template-list    登録済み書式の一覧
   /template-fill    PDF からデータを抽出して書式に自動入力
-  /template-promote 案件書式を user / firm スコープに昇格（--to user|firm）
-  /template-demote  user / firm 書式を案件側へコピー（--from user|firm）
-  /template-firm-setup 事務所共有テンプレート用フォルダを設定（OS 同期フォルダ）
+  /template-promote 案件書式を「この PC の全案件で共通」または「事務所共有」へ移動（--to user|firm）
+  /template-demote  共通領域の書式を案件側へコピー（--from user|firm）
+  /template-firm-setup 事務所共有テンプレート用フォルダを設定（クラウド同期フォルダ）
 
 【ドキュメント処理】
   /family-tree       戸籍から相続関係説明図を生成

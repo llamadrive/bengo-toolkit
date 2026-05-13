@@ -4,6 +4,24 @@
 
 ## [Unreleased]
 
+## [3.7.6] - 2026-05-14
+
+### Changed
+
+- **ユーザー向け語彙をプレーンな日本語に統一** — テンプレート関連コマンド
+  （`/template-create` `/template-fill` `/template-install` `/template-list`
+  `/template-promote` `/template-demote` `/template-firm-setup`）の確認質問・
+  完了案内・エラーメッセージから「スコープ」「PII」「workspace」「lawyer」
+  「OS 同期フォルダ」等の技術用語・英語混じり表現を排除し、それぞれ
+  「保存場所」「個人情報」「案件フォルダ」「弁護士」「クラウド同期フォルダ」
+  に置き換えた。`--scope case/firm/user` の CLI フラグは互換性のため維持。
+  あわせて `/audit-config` `/case-info` `/family-tree` `/typo-check`
+  `/lawsuit-analysis` `/help` でも同様の整理を行った。
+- **CLAUDE.md に「ユーザー向け語彙」セクションを追加** — 今後新規 skill /
+  command を足すときの語彙ルールを SSOT 化。プロンプト・確認質問・エラー
+  メッセージ・サマリー出力に適用する一覧表を明記し、内部メカニズム説明
+  （Step 0 ガード・Bash コードブロック・スクリプト名）は例外として除外。
+
 ## [3.7.5] - 2026-05-14
 
 ### Fixed

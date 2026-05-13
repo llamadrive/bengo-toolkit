@@ -4,9 +4,9 @@ allowed-tools: Read, Write, Glob, Bash(python3 skills/_lib/copy_file.py:*), Bash
 ---
 
 登録済みXLSXテンプレートに、PDFや画像から抽出したデータを自動入力する。
-テンプレートは現在の案件フォルダ（workspace）に紐づいており、case スコープの
-テンプレートは `./.claude-bengo/templates/` から、user スコープの
-テンプレートは `~/.claude-bengo/templates/` から自動解決される。
+テンプレートは現在の案件フォルダに紐づいており、「この案件のみ」の
+テンプレートは `./.claude-bengo/templates/` から、「この PC の全案件で共通」の
+テンプレートは `~/.claude-bengo/templates/` から自動的に見つけて使う。
 
 $ARGUMENTS の指定方法:
 - ソースファイルのみ: `/template-fill 申立書.pdf` — テンプレートが1件なら自動選択、複数なら選択肢を表示

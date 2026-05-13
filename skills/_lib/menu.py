@@ -109,8 +109,8 @@ ALL_COMMANDS: List[Tuple[str, str, str]] = [
     ("/template-create", "独自 XLSX 書式を登録", "code"),
     ("/template-list", "登録済み書式の一覧", "code"),
     ("/template-fill", "PDF からデータを抽出して書式に自動入力", "code"),
-    ("/template-promote", "案件書式を user / firm スコープに昇格", "code"),
-    ("/template-demote", "user / firm 書式を案件側へコピー", "code"),
+    ("/template-promote", "案件書式を「この PC の全案件で共通」または「事務所共有」へ移動", "code"),
+    ("/template-demote", "共通領域の書式を案件側へコピー", "code"),
     ("/template-firm-setup", "事務所共有テンプレート用フォルダを設定", "code"),
     # ドキュメント処理
     ("/family-tree", "戸籍から相続関係説明図を生成", "code"),

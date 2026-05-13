@@ -3,7 +3,7 @@ description: 監査ログ設定を表示・変更する（記録先・HMAC・ク
 allowed-tools: Read, Write, Bash(python3 skills/_lib/workspace.py:*)
 ---
 
-現在の workspace の監査ログ設定を表示・変更する。
+現在の案件フォルダの監査ログ設定を表示・変更する。
 
 ## Step 0: 動作環境ガード
 
@@ -31,8 +31,8 @@ Bash: python3 skills/_lib/workspace.py check --require local_fs
 python3 skills/_lib/workspace.py config show
 ```
 
-workspace がまだ初期化されていない場合は CWD を workspace として silently
-初期化してから表示する。
+案件フォルダがまだ初期化されていない場合は現在のフォルダを案件フォルダとして
+黙って初期化してから表示する。
 
 ### 表示内容（v3.3.0〜）
 
@@ -67,8 +67,8 @@ workspace がまだ初期化されていない場合は CWD を workspace とし
 ### 変更フロー
 
 **1. 記録先変更:**
-- 新しいパスを質問（既定・workspace 外の絶対パス・tmpfs 等）
-- 外部パスの場合は `CLAUDE_BENGO_AUDIT_ALLOW_EXTERNAL_PATH` 設定が必要な旨を説明
+- 新しいパスを質問（既定・案件フォルダ外の絶対パス・メモリ上の領域等）
+- 案件フォルダの外を指定する場合は `CLAUDE_BENGO_AUDIT_ALLOW_EXTERNAL_PATH` 設定が必要な旨を説明
 - `workspace.py config set audit_path <新パス>` で保存
 
 **2. ファイル名記録:**
@@ -87,7 +87,7 @@ workspace がまだ初期化されていない場合は CWD を workspace とし
 - **鍵は rotate しない**（過去のログが検証不能になる）
 
 **4. クラウド同期:**
-- `--global` スコープで設定することを推奨（事務所全体の cloud URL なので）
+- `--global` を付けて事務所共通設定として保存することを推奨（事務所全体の cloud URL なので）
 - `workspace.py config set cloud_url <URL> --global`
 - `workspace.py config set cloud_token <token> --global` も設定
 - 手動 ingest コマンドの例を表示
@@ -98,10 +98,10 @@ workspace がまだ初期化されていない場合は CWD を workspace とし
   `CLAUDE_BENGO_ALLOW_DISABLE_AUDIT=1` を併設する必要がある
 - この挙動変更は弁護士法 §23 対応の監査証跡を「うっかり切る」事故を防ぐため
 
-### グローバル vs case-level の使い分け
+### この案件のみ vs 事務所共通 の使い分け
 
-- case-level（既定）: この案件フォルダだけに適用
-- global（`--global` フラグ付き）: 事務所の既定値。個別案件で上書き可能
+- この案件のみ（既定）: 現在の案件フォルダだけに適用
+- 事務所共通（`--global` フラグ付き）: 事務所の既定値。個別案件で上書き可能
 
 表示時は両方をマージした実効値を見せる。
 
