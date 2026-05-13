@@ -94,6 +94,12 @@ DEFAULT_AUDIT_PATH = Path.home() / ".claude-bengo" / "audit.jsonl"
 SESSION_ID_FILE = Path.home() / ".claude-bengo" / "session_id.txt"
 SESSION_TTL_SECONDS = 3600  # 1 時間
 
+# Windows の `msvcrt.locking` retry budget。kernel 提供の LK_LOCK は 10 秒で
+# 諦めて IOError を投げるため、Python 側で LK_NBLCK + 自前 retry に切り替えて
+# budget を広げる。CI 10-way contention でも余裕があるよう 30 秒に設定。
+# Linux/macOS の fcntl.flock(LOCK_EX) はブロッキングなので影響しない。
+_MSVCRT_LOCK_TIMEOUT_SECONDS = 30.0
+
 # Python 3.8 では `__file__` が相対のまま残ることがあり、self-test 内で
 # subprocess が `cwd` を変えた時に「No such file」で失敗する（Python 3.9+ の
 # bpo-20443 で絶対化される）。module load 時に一度だけ解決しておく。
@@ -486,11 +492,39 @@ class _FileLock:
             else:
                 try:
                     import msvcrt  # type: ignore
+                    import time
 
-                    # 末尾に移動しロック（ブロッキング）
+                    # `LK_LOCK` は kernel が 10 回 / 1 秒間隔で retry した後に
+                    # IOError を投げる。CI worker の 10-way contention 下では
+                    # この 10 秒 budget を使い切って lock 取得に失敗し、
+                    # fail-closed パスで record が静かに drop していた
+                    # (issue #16)。`LK_NBLCK` （non-blocking）でロック試行し、
+                    # 取得失敗時は Python 側で短い backoff + 長めの budget で
+                    # retry する。
+                    deadline = time.monotonic() + _MSVCRT_LOCK_TIMEOUT_SECONDS
+                    backoff = 0.01  # 10 ms
                     self._fh.seek(0)
-                    msvcrt.locking(self._fh.fileno(), msvcrt.LK_LOCK, 1)
-                    self._mode = "msvcrt"
+                    acquired = False
+                    last_err: Optional[BaseException] = None
+                    while time.monotonic() < deadline:
+                        try:
+                            msvcrt.locking(self._fh.fileno(), msvcrt.LK_NBLCK, 1)
+                            acquired = True
+                            break
+                        except OSError as e:
+                            last_err = e
+                            time.sleep(backoff)
+                            # 50 ms を上限に指数バックオフ。retry 頻度を上げて
+                            # contention 下でも取りこぼしを減らす。
+                            backoff = min(backoff * 1.5, 0.05)
+                    if acquired:
+                        self._mode = "msvcrt"
+                    else:
+                        fallback_reason = (
+                            f"msvcrt.locking timed out after "
+                            f"{_MSVCRT_LOCK_TIMEOUT_SECONDS}s: {last_err}"
+                        )
+                        self._mode = None
                 except Exception as e:
                     fallback_reason = f"msvcrt.locking failed: {e}"
                     self._mode = None

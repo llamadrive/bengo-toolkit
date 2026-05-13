@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+## [3.7.4] - 2026-05-13
+
+### Fixed
+
+- **Windows での audit.py 並列書込が稀に取りこぼす不具合** (#16) —
+  `_FileLock` は Windows で `msvcrt.locking(LK_LOCK, 1)` を使っていたが、
+  kernel 提供の retry が 10 回 / 1 秒間隔（合計 10 秒）で諦めて IOError を
+  投げる。CI worker の 10-way contention 下ではこの budget を使い切って
+  lock 取得に失敗し、`_FileLock` が fail-closed で `RuntimeError` を投げ、
+  subprocess は exit 1 で終わるが、呼び出し側が exit code を見ない経路で
+  record が静かに drop していた。`LK_NBLCK`（non-blocking）に切替え、
+  Python 側で 30 秒 budget + 10〜50ms exponential backoff で retry する
+  ようにした。Linux / macOS の `fcntl.flock(LOCK_EX)` 経路は影響なし。
+
 ## [3.7.3] - 2026-05-13
 
 ### Fixed
