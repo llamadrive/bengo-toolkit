@@ -4,6 +4,75 @@
 
 ## [Unreleased]
 
+## [3.7.2] - 2026-05-13
+
+### Fixed
+
+- **家系図 `.agent` 出力のスキーマ違反** — `skills/family-tree/SKILL.md`
+  の Step 3 サンプルが存命者に対して `"deathDate": null` を例示していた
+  ため、生成された `.agent` が agent-format v0.1 schema（`deathDate:
+  string`）に違反し、`knorq-ai.github.io/agent-format` viewer で 85 件の
+  validation エラーになっていた。サンプルを死亡日文字列に修正し、存命者は
+  当該フィールド自体を省略する運用に揃えた。
+
+### Changed
+
+- **`/quickstart` のパス解決を高速化** — fixtures 参照は
+  `${CLAUDE_PLUGIN_ROOT}` から絶対パスを組み立てる方式に変更。従来は
+  plugin install 先を `ls` で探索していたため初回応答に数秒のオーバー
+  ヘッドがあった。env var が未定義な旧クライアント向け fallback
+  (`find ~/.claude/plugins/cache`) も明記。
+- **`/quickstart` の初期化ステップを並列化** — `mktemp` /
+  `workspace.py init` / 入力 fixture の Read / `audit.py record` を 1
+  メッセージ内で同時実行する旨を明示。家系図シナリオで体感数秒の短縮。
+
+## [3.7.1] - 2026-05-13
+
+### Added
+
+- **Claude Cowork 環境の検知と graceful degrade** — Cowork は sandboxed VM 上
+  で動作し、ローカル stdio MCP（docx/xlsx/pptx/agent-format）とローカル
+  `.claude-bengo/` 配下に到達できない。ローカル機能が必要な skill を Cowork
+  で呼ぶと、`workspace.py check --require <cap>` が exit 2 + 友好的な日本語
+  メッセージを返してそのまま停止する。
+- **`skills/_lib/runtime.py`**（新規・import-only）— surface 判定モジュール。
+  `CLAUDE_CODE_IS_COWORK=1` を fast path、`~/.claude-bengo/` 書込テストを
+  fallback に持つ。プロセス内 module-level cache。
+- **`workspace.py surface`** — 現在の surface を JSON で返す。
+- **`workspace.py check --require <cap>`** — 必要 capability の検査。
+  exit code: `0`=ok, `2`=blocked-by-surface（stdout に日本語 message）,
+  `1`=その他のエラー。
+- **`skills/_lib/menu.py`**（新規）— `/help` `/quickstart` のメニューを
+  surface に応じて Python が決定論的に render する。Cowork では blocked
+  skill が menu から自動除外される。`--plain` / `NO_COLOR=1` でテスト向け
+  の plain text 出力。
+- **`COWORK_SUPPORT.md`**（新規）— 全 23 command × 必要 capability の SSOT。
+- **`/law-search` の Cowork 対応** — `search.py fetch-article` は Cowork で
+  WebFetch 指示 JSON を stderr 最終行に emit。SKILL.md は WebFetch 経由で
+  e-Gov API を叩く（Anthropic infra 経由でサンドボックスを迂回）。
+  `search-keyword`（全文 XML DL 検索）は Cowork で degrade JSON を出して停止。
+
+### Changed
+
+- **`_lib/audit.py record`** — Cowork surface では silent exit 0 + stderr
+  notice `{"audit": "skipped (cowork)"}`。計算 skill は SKILL.md 改変なしで
+  Cowork 透過対応。
+- **`_lib/first_run.py notice`** — Cowork で no-op。
+- **`commands/{help,quickstart}.md`** — `menu.py` を呼ぶよう簡略化。
+- **`commands/{help,quickstart,inheritance-calc,law-search,case-info,verify}.md`**
+  の `allowed-tools` を更新（新 CLI への bash 権限付与）。
+- **`commands/{typo-check,family-tree,lawsuit-analysis,audit-config,case-info,verify,template-install,template-list,template-promote,template-demote,template-firm-setup,template-create,template-fill}.md`**
+  に `## Step 0: 動作環境ガード` を追加（`workspace.py check --require <cap>`）。
+
+### Notes
+
+- 既存の Claude Code（ローカル CLI / デスクトップ）での挙動には影響なし。
+- 計算系 7 skill (`*-calc`) は Cowork で動作するが、監査ログは記録されない。
+- `/law-search` の条見出しキーワード検索は Cowork 未対応。条番号がわかれば
+  `fetch-article` で取得可能。`law-id-list.tsv` Grep も Cowork で動作する。
+
+## [3.7.0-followup]
+
 ### Changed
 
 - **GitHub リポジトリを `llamadrive/claude-bengo` から `llamadrive/bengo-toolkit` にリネームした。** GitHub が自動的に redirect を設定するため、旧 URL を使った `git clone` や `/plugin marketplace add llamadrive/claude-bengo` も引き続き機能する。

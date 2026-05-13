@@ -145,7 +145,7 @@ python3 skills/_lib/audit.py record --skill family-tree --event file_read --file
       "role": "父",
       "birthday": "昭和35年1月15日",
       "address": "東京都千代田区...",
-      "deathDate": null
+      "deathDate": "令和5年3月1日"
     }
   ],
   "relationships": [
