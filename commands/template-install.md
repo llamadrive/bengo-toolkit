@@ -5,6 +5,16 @@ allowed-tools: Read, Bash(python3 skills/_lib/template_lib.py:*), Bash(python3 s
 
 プラグインに同梱されている裁判所書式・実務書式の雛形（債権者一覧表、遺産目録、交通事故示談書等）を現在の案件フォルダの `.claude-bengo/templates/` にコピーする。コピー後は `/template-fill` から選択・利用できる。
 
+## Step 0: 動作環境ガード
+
+```
+Bash: python3 skills/_lib/workspace.py check --require local_fs
+```
+
+- exit 0 → 次の Step へ進む
+- exit 2 → stdout の日本語メッセージをそのままユーザーへ表示して停止
+- exit 1 → stderr の error JSON をユーザーに伝えて停止
+
 $ARGUMENTS の指定方法:
 - 引数なし: 利用可能な同梱テンプレートを一覧表示する
 - テンプレート ID: `/template-install creditor-list` — 指定テンプレートをインストール（既定: **この案件のみ**）

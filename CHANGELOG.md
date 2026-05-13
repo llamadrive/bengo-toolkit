@@ -4,6 +4,31 @@
 
 ## [Unreleased]
 
+## [3.7.3] - 2026-05-13
+
+### Fixed
+
+- **`.mcp.json` の bundled MCP server 定義が空になっていた回帰を復元** —
+  `xlsx-editor` / `docx-editor` / `agent-format` を再定義。fresh install
+  で文書系コマンド（`/template-fill`・`/typo-check`・`/family-tree`
+  viewer 描画・`/lawsuit-analysis`）が動作するようにした。
+- **`/help --all` が argparse エラーで落ちる** — `menu.py print-help` の
+  `--all` を明示的なフラグとして登録（従来は positional `nargs="*"` だった
+  ため argparse が unknown option として拒否していた）。
+- **`runtime.has_local_fs()` が surface を見ていなかった** — Cowork VM の
+  `$HOME` が書込可能な構成では local_fs gate が素通りし、`/audit-config`
+  / `/case-info` が ephemeral VM disk に書き込んでいた。`surface() ==
+  "cowork"` なら無条件に False を返すように修正。
+- **`commands/help.md` の `allowed-tools` 不整合** — Cowork 動作環境ガード
+  のために `workspace.py check` を呼ぶ必要があるが、`allowed-tools` には
+  `menu.py` しか許可されていなかった。`workspace.py` を追加。
+
+### Added
+
+- **`tests/cowork_gating.sh` に 3 件の回帰テスト** — `local_fs` gate の
+  cowork ブロック、`menu.py print-help --all` の動作、`.mcp.json` の bundled
+  server 定義の存在確認。
+
 ## [3.7.2] - 2026-05-13
 
 ### Fixed

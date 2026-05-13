@@ -576,30 +576,49 @@ python3 ~/.claude/plugins/cache/llamadrive/bengo-toolkit/{VERSION}/skills/_lib/a
 
 ## コマンド一覧
 
-| コマンド | 機能 | 機密扱い |
-|---------|------|---------|
-| `/quickstart` | 60 秒で試す（同梱サンプル、事前準備不要） | — |
-| `/help` | タスクから機能を探す対話メニュー | — |
-| `/verify` | 動作確認 | — |
-| `/case-info` | 現在の案件フォルダの状態を表示 | — |
-| `/audit-config` | 監査ログ設定（記録先・HMAC・クラウド同期） | — |
-| `/template-install` | 同梱書式（31種）をインストール | ✅ |
-| `/template-create` | 独自のXLSX書式をテンプレートとして登録 | ✅ |
-| `/template-list` | 現在の案件フォルダのテンプレート一覧 | ✅ |
-| `/template-fill` | ソース文書からテンプレートに自動入力 | ✅ |
-| `/family-tree` | 戸籍謄本から相続関係説明図を生成 | ✅ |
-| `/typo-check` | 法律文書の校正（修正履歴付き） | ✅ |
-| `/lawsuit-analysis` | 訴訟文書の分析レポート生成 | ✅ |
-| `/inheritance-calc` | 法定相続分の自動計算（民法、代襲・再代襲・半血・放棄対応） | — |
-| `/traffic-damage-calc` | 交通事故損害賠償額（赤い本基準） | ✅ |
-| `/child-support-calc` | 養育費・婚姻費用（令和元年算定方式） | ✅ |
-| `/debt-recalc` | 利息制限法 引き直し計算 | ✅ |
-| `/overtime-calc` | 未払残業代（労基法37条、時効判定） | ✅ |
-| `/iryubun-calc` | 遺留分侵害額（民法1042-1048条） | ✅ |
-| `/property-division-calc` | 離婚財産分与（民法768条） | ✅ |
-| `/law-search` | 法令条文の検索（e-Gov API） | — |
+機密扱い (✅) = ローカルファイル操作を伴うため、初回実行時に `.claude-bengo/` を自動作成する。
+Cowork (★) = Claude Cowork（VM 上の sandbox 環境）でも動作する。それ以外は Claude Code 限定。
+
+| コマンド | 機能 | 機密扱い | Cowork |
+|---------|------|:---:|:---:|
+| `/quickstart` | 60 秒で試す（同梱サンプル、事前準備不要） | — | ★ |
+| `/help` | タスクから機能を探す対話メニュー | — | ★ |
+| `/verify` | 動作確認 | — |   |
+| `/case-info` | 現在の案件フォルダの状態を表示 | — |   |
+| `/audit-config` | 監査ログ設定（記録先・HMAC・クラウド同期） | — |   |
+| `/template-install` | 同梱書式（31種）をインストール | ✅ |   |
+| `/template-create` | 独自のXLSX書式をテンプレートとして登録 | ✅ |   |
+| `/template-list` | 現在の案件フォルダのテンプレート一覧 | ✅ |   |
+| `/template-fill` | ソース文書からテンプレートに自動入力 | ✅ |   |
+| `/family-tree` | 戸籍謄本から相続関係説明図を生成 | ✅ |   |
+| `/typo-check` | 法律文書の校正（修正履歴付き） | ✅ |   |
+| `/lawsuit-analysis` | 訴訟文書の分析レポート生成 | ✅ |   |
+| `/inheritance-calc` | 法定相続分の自動計算（民法、代襲・再代襲・半血・放棄対応） | — | ★ |
+| `/traffic-damage-calc` | 交通事故損害賠償額（赤い本基準） | ✅ | ★ |
+| `/child-support-calc` | 養育費・婚姻費用（令和元年算定方式） | ✅ | ★ |
+| `/debt-recalc` | 利息制限法 引き直し計算 | ✅ | ★ (※) |
+| `/overtime-calc` | 未払残業代（労基法37条、時効判定） | ✅ | ★ |
+| `/iryubun-calc` | 遺留分侵害額（民法1042-1048条） | ✅ | ★ |
+| `/property-division-calc` | 離婚財産分与（民法768条） | ✅ | ★ |
+| `/law-search` | 法令条文の検索（e-Gov API） | — | ★ (※※) |
+
+(※) `/debt-recalc` は対話入力なら Cowork で動作。XLSX 取引履歴ファイル入力は Claude Code 限定。
+(※※) `/law-search` の条文取得は Cowork で動作（WebFetch 経由）。条見出しキーワード検索は Claude Code 限定。
+
+詳細は [`COWORK_SUPPORT.md`](./COWORK_SUPPORT.md) を参照。
 
 「機密扱い」= ✅ のコマンドを最初に実行すると、CWD（または親フォルダ）に `.claude-bengo/` を自動作成し、以降そこに監査ログ・テンプレートを蓄積する。事前に `/matter-create` のような登録を行う必要はない。
+
+### Cowork で利用する場合
+
+Claude Cowork は sandboxed VM 上で動作するため、ローカル DOCX/XLSX 編集・
+ローカル `.claude-bengo/` 書込・urllib による外部 API 直接接続が制限される。
+本プラグインは Cowork を自動検知し、ローカル機能を必要とする skill には
+「Claude Code でご利用ください」と友好的エラーを返す。計算系と `/law-search`
+（WebFetch fallback）は Cowork でも動作する。
+
+完全機能を利用するには Claude Code（CLI または Mac/Windows デスクトップ
+アプリ）に bengo-toolkit を install してほしい。
 
 ---
 

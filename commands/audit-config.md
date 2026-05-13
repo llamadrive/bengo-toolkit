@@ -5,6 +5,16 @@ allowed-tools: Read, Write, Bash(python3 skills/_lib/workspace.py:*)
 
 現在の workspace の監査ログ設定を表示・変更する。
 
+## Step 0: 動作環境ガード
+
+```
+Bash: python3 skills/_lib/workspace.py check --require local_fs
+```
+
+- exit 0 → 次の Step へ進む
+- exit 2 → stdout の日本語メッセージをそのままユーザーへ表示して停止
+- exit 1 → stderr の error JSON をユーザーに伝えて停止
+
 ## $ARGUMENTS の扱い
 
 - **引数なし**: 現在の設定を表示し、変更メニューを出す

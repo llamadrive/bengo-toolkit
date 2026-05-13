@@ -929,6 +929,70 @@ def _cmd_config(args: argparse.Namespace) -> int:
     return 1
 
 
+def _cmd_surface(args: argparse.Namespace) -> int:
+    """現在の surface を JSON で返す。"""
+    import importlib
+    here = str(Path(__file__).resolve().parent)
+    added = False
+    if here not in sys.path:
+        sys.path.insert(0, here)
+        added = True
+    try:
+        rt = importlib.import_module("runtime")
+    finally:
+        if added:
+            try:
+                sys.path.remove(here)
+            except ValueError:
+                pass
+    s = rt.surface()
+    print(json.dumps({"surface": s}, ensure_ascii=False))
+    return 0
+
+
+def _cmd_check(args: argparse.Namespace) -> int:
+    """capability チェック。exit 0=ok, 2=blocked-by-surface, 1=other error。
+
+    blocked の場合 stdout に日本語の友好的メッセージ、stderr に JSON。
+    """
+    import importlib
+    here = str(Path(__file__).resolve().parent)
+    added = False
+    if here not in sys.path:
+        sys.path.insert(0, here)
+        added = True
+    try:
+        rt = importlib.import_module("runtime")
+    finally:
+        if added:
+            try:
+                sys.path.remove(here)
+            except ValueError:
+                pass
+
+    caps = tuple(args.require)
+    if not caps:
+        print(json.dumps({"error": "no --require capabilities given"}, ensure_ascii=False), file=sys.stderr)
+        return 1
+    result = rt.require(*caps)
+    if result.ok:
+        return 0
+    # blocked
+    print(rt.cowork_blocked_message(result.missing))
+    print(
+        json.dumps(
+            {
+                "blocked": True,
+                "surface": result.surface,
+                "missing": list(result.missing),
+            },
+            ensure_ascii=False,
+        ),
+        file=sys.stderr,
+    )
+    return 2
+
+
 # ---------------------------------------------------------------------------
 # self-test
 # ---------------------------------------------------------------------------
@@ -1409,6 +1473,23 @@ def main() -> int:
     p_show.add_argument("--cwd", help="Path (default CWD)")
     p_show.add_argument("--global", dest="global_", action="store_true")
     p_cfg.set_defaults(func=_cmd_config)
+
+    p_surf = sub.add_parser("surface", help="Print current surface (cowork|code|unknown)")
+    p_surf.set_defaults(func=_cmd_surface)
+
+    p_chk = sub.add_parser(
+        "check",
+        help="Check if required capabilities are available "
+        "(exit 0=ok, 2=blocked-by-surface, 1=other error)",
+    )
+    p_chk.add_argument(
+        "--require",
+        action="append",
+        default=[],
+        choices=["local_fs", "docx_mcp", "xlsx_mcp", "pptx_mcp", "agent_format_mcp"],
+        help="Capability to require (can be passed multiple times)",
+    )
+    p_chk.set_defaults(func=_cmd_check)
 
     args = ap.parse_args()
     if args.self_test:

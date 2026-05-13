@@ -22,6 +22,16 @@ $ARGUMENTS:
 
 ## ワークフロー
 
+### Step 0: 動作環境ガード
+
+```
+Bash: python3 skills/_lib/workspace.py check --require local_fs
+```
+
+- exit 0 → Step 1 へ
+- exit 2 → stdout の日本語メッセージをそのままユーザーへ表示して停止
+- exit 1 → stderr の error JSON をユーザーに伝えて停止
+
 ### Step 1: 現状確認
 
 ```bash

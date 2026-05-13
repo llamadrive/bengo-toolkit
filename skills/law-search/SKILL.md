@@ -90,6 +90,25 @@ Bash: python3 skills/law-search/search.py fetch-article --law-id 129AC0000000089
 
 出力は条文の XML。stderr に JSON 形式のエラーを出した場合は `status` フィールドで失敗理由を判別する。
 
+#### Cowork 環境での fallback (v3.7.1〜)
+
+`search.py` は Cowork surface（`CLAUDE_CODE_IS_COWORK=1`）を検知すると、
+urllib を呼ばず stderr 最終行に以下の JSON を emit して exit 0 する:
+
+```json
+{"use_webfetch": true, "url": "https://laws.e-gov.go.jp/api/1/articles;lawId=...;article=...;", "law_footer": {...}}
+```
+
+stderr の最終行をパースし、`use_webfetch == true` の場合は **Claude の
+WebFetch ツール** で同 URL を取得する（Anthropic infra 経由なのでサンドボックス
+ネットワーク制約を迂回できる）。WebFetch で取得した XML を Step 3a の通常
+ルートと同じく `references/law-xml-structure.md` のスキーマで解析する。
+
+法令フッター（出典・参照日）は stderr の `law_footer` を元に組み立てるが、
+`retrieved_at` は **WebFetch 完了直後の現在時刻に上書き**する（`TBD ...`
+プレースホルダのまま表示しない）。`cache_status` は `"webfetch (cowork)"`
+のまま表示する。
+
 **枝番号への対応:** 例えば「民法 第 766 条の 2」は `--article 766_2` と指定する（アンダースコア区切り）。
 
 **取得するデータの上限:**
@@ -182,6 +201,20 @@ Bash: python3 skills/law-search/search.py fetch-article --law-id 129AC0000000089
 - 法令全文 XML は 1〜5 MB。大きな法令は初回取得に数秒かかる
 - キャッシュは 24 時間有効。期限切れは自動で再取得する
 - キーワードは最大 50 文字。正規表現ではなく単純な部分一致である
+
+#### Cowork 環境では未対応 (v3.7.1〜)
+
+`search.py` は Cowork surface で `search-keyword` が呼ばれた場合、全文 XML
+を DL せず以下を stderr 最終行に emit して exit 0 する:
+
+```json
+{"degraded": true, "reason": "cowork_no_fulltext_search", "message": "..."}
+```
+
+stdout には空の JSON 配列 `[]` を出す。SKILL は `message` をユーザーへその
+まま表示し、「条番号がわかっていれば `fetch-article` で取得できる」と案内
+する。`law-id-list.tsv` の Grep は Cowork でも動作する（Read ツール経由）
+ため、Step 2 の法令 ID 検索は影響を受けない。
 
 ### Step 3d: 法令名の候補提案
 

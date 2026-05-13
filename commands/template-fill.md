@@ -15,4 +15,16 @@ $ARGUMENTS の指定方法:
 - 追記モード: `/template-fill --continue 財産目録_filled.xlsx 保険証書.pdf` — 既存の入力済みファイルに追加入力
 - 指定なし: 対話で確認
 
+## Step 0: 動作環境ガード
+
+```
+Bash: python3 skills/_lib/workspace.py check --require local_fs --require xlsx_mcp
+```
+
+- exit 0 → 次の Step へ進む
+- exit 2 → stdout の日本語メッセージをそのままユーザーへ表示して停止
+- exit 1 → stderr の error JSON をユーザーに伝えて停止
+
+## Step 1
+
 まず `skills/template-fill/SKILL.md` を Read ツールで読み込み、そこに記載された手順に従って実行する。

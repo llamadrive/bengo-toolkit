@@ -1,6 +1,6 @@
 ---
 description: 日本の法令を検索・条文参照する（e-Gov 法令API）
-allowed-tools: Read, Glob, Grep, Bash(python3 skills/law-search/search.py:*)
+allowed-tools: Read, Glob, Grep, Bash(python3 skills/law-search/search.py:*), Bash(python3 skills/_lib/workspace.py:*), WebFetch
 ---
 
 日本の法令（法律・政令・省令等）を e-Gov 法令 API から検索・取得する。

@@ -12,6 +12,16 @@ $ARGUMENTS:
 - パス（必須、`--unset` を除く）— OS 同期クライアントがマウントしているローカルディレクトリ
 - `--unset` — 既存設定を削除する
 
+## Step 0: 動作環境ガード
+
+```
+Bash: python3 skills/_lib/workspace.py check --require local_fs
+```
+
+- exit 0 → 次の Step へ進む
+- exit 2 → stdout の日本語メッセージをそのままユーザーへ表示して停止
+- exit 1 → stderr の error JSON をユーザーに伝えて停止
+
 ## 典型的なセットアップ
 
 事務所の admin が一度だけ:

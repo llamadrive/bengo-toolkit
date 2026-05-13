@@ -63,6 +63,25 @@ def _ws():
                 pass
 
 
+def _is_cowork() -> bool:
+    """runtime.surface() == "cowork" を遅延 import して判定する。"""
+    import importlib
+    here = str(Path(__file__).resolve().parent)
+    added = False
+    if here not in sys.path:
+        sys.path.insert(0, here)
+        added = True
+    try:
+        rt = importlib.import_module("runtime")
+        return rt.surface() == "cowork"
+    finally:
+        if added:
+            try:
+                sys.path.remove(here)
+            except ValueError:
+                pass
+
+
 def _load_global() -> Dict[str, object]:
     return _ws().load_global_config()
 
@@ -103,7 +122,13 @@ def reset() -> Dict[str, object]:
 
 
 def _cmd_notice(args: argparse.Namespace) -> int:
-    """初回なら NOTICE_TEXT を stdout に出して mark。既出なら silently exit 0。"""
+    """初回なら NOTICE_TEXT を stdout に出して mark。既出なら silently exit 0。
+
+    Cowork surface ではローカル FS が無いため何もしない。
+    """
+    if _is_cowork():
+        print(json.dumps({"first_run": "skipped (cowork)"}, ensure_ascii=False), file=sys.stderr)
+        return 0
     st = notice_status()
     if st["shown"] and not args.force:
         return 0

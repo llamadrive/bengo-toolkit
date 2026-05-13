@@ -471,6 +471,79 @@ def http_get(url: str) -> bytes:
 # ------------------------------------------------------------------------------
 
 
+def _is_cowork() -> bool:
+    """`_lib/runtime.py` を遅延 import して surface == "cowork" か判定する。
+
+    Cowork は sandboxed VM 上で動作するため Python urllib による外部 API
+    egress と `~/.claude-bengo/cache/` への書込が共に失敗する。本判定で
+    早期分岐させる。
+    """
+    import importlib
+    here = str(Path(__file__).resolve().parent.parent / "_lib")
+    added = False
+    if here not in sys.path:
+        sys.path.insert(0, here)
+        added = True
+    try:
+        rt = importlib.import_module("runtime")
+        return rt.surface() == "cowork"
+    finally:
+        if added:
+            try:
+                sys.path.remove(here)
+            except ValueError:
+                pass
+
+
+def _emit_webfetch_directive(*, law_id: str, article: str, url: str) -> None:
+    """Cowork 用: WebFetch 指示と law_footer を stderr 最終行に emit する。
+
+    SKILL.md は本スクリプトの stderr 最終行をパースし、`use_webfetch` が
+    true なら Claude の WebFetch tool で `url` を取得して条文を表示する。
+    `retrieved_at` は WebFetch 完了後の時刻で SKILL.md 側が再構築する。
+    """
+    directive = {
+        "use_webfetch": True,
+        "url": url,
+        "law_footer": {
+            "source": "e-Gov 法令 API (https://laws.e-gov.go.jp/) via Claude WebFetch",
+            "retrieved_at": "TBD (Claude が WebFetch 完了時刻で上書き)",
+            "law_id": law_id,
+            "article": article,
+            "cache_status": "webfetch (cowork)",
+            "warning": "Cowork 環境では urllib 直接接続ができないため Claude の "
+            "WebFetch を経由した。法改正直後は反映遅延がある。提出書面引用時は "
+            "e-Gov 原本と突合してほしい。",
+        },
+    }
+    sys.stderr.write(json.dumps(directive, ensure_ascii=False) + "\n")
+
+
+def _emit_keyword_degrade(*, law_id: str, keyword: str) -> None:
+    """Cowork 用: トピック検索の degrade JSON を stderr 最終行に emit する。
+
+    法令全文 XML（数 MB）の DL とローカル parse 検索は Cowork で実行不能。
+    SKILL.md は本メッセージをユーザーに見せ、条番号がわかっていれば
+    `fetch-article` で代用するよう案内する。
+    """
+    directive = {
+        "degraded": True,
+        "reason": "cowork_no_fulltext_search",
+        "law_id": law_id,
+        "keyword": keyword,
+        "message": (
+            "Cowork 環境では条見出しのキーワード検索（法令全文 DL → ローカル grep）"
+            "は未対応である。\n\n"
+            "代替手段:\n"
+            "  ・条番号がわかっている場合は `fetch-article` で直接取得できる。\n"
+            "  ・法令名の正式名・ID を引きたい場合は `law-id-list.tsv` の Grep が"
+            "Cowork でも動作する。\n\n"
+            "完全機能版は Claude Code（https://claude.com/code）でご利用いただきたい。"
+        ),
+    }
+    sys.stderr.write(json.dumps(directive, ensure_ascii=False) + "\n")
+
+
 def _emit_footer_metadata(
     *,
     law_id: str,
@@ -511,7 +584,14 @@ def _cache_status_from_mtime(cache_path: Path) -> str:
 
 
 def cmd_fetch_article(args: argparse.Namespace) -> int:
-    """単一条文を取得する。キャッシュがあれば完全性検証のうえ再利用する。"""
+    """単一条文を取得する。キャッシュがあれば完全性検証のうえ再利用する。
+
+    Cowork surface では Python urllib による egress がサンドボックス制約で
+    失敗し、`~/.claude-bengo/cache/` への書込も不可。代替として stderr 最終行
+    に `{"use_webfetch": true, "url": "..."}` を emit して exit 0 する。
+    SKILL.md 側はこれを検知し、Claude の WebFetch ツール（Anthropic infra 経由、
+    サンドボックスを迂回）で同 URL を取得する。
+    """
     try:
         law_id = validate_law_id(args.law_id)
         article = validate_article_num(args.article)
@@ -523,6 +603,11 @@ def cmd_fetch_article(args: argparse.Namespace) -> int:
         law_id=urllib.parse.quote(law_id, safe=""),
         article=urllib.parse.quote(article, safe=""),
     )
+
+    # Cowork 検知 → cache/HTTP に触らずに WebFetch 指示を stderr 最終行に出す。
+    if _is_cowork():
+        _emit_webfetch_directive(law_id=law_id, article=article, url=url)
+        return EXIT_OK
 
     cache = cache_path_article(law_id, article)
     cached_text = read_cache_if_valid(cache)
@@ -574,13 +659,23 @@ def _iter_articles_with_parent(root: ET.Element):
 
 
 def cmd_search_keyword(args: argparse.Namespace) -> int:
-    """法令全文 XML をキャッシュし、条見出しをキーワード検索する。"""
+    """法令全文 XML をキャッシュし、条見出しをキーワード検索する。
+
+    Cowork surface では本検索は未対応である。代わりに degrade JSON を
+    stderr 最終行に emit し、SKILL.md にユーザー向け案内をさせる。
+    """
     try:
         law_id = validate_law_id(args.law_id)
         keyword = validate_keyword(args.keyword)
     except ValueError as exc:
         eprint_json(None, str(exc))
         return EXIT_VALIDATION
+
+    if _is_cowork():
+        _emit_keyword_degrade(law_id=law_id, keyword=keyword)
+        # stdout に空 JSON 配列を返して SKILL.md の既存パーサが破綻しないように
+        sys.stdout.write("[]\n")
+        return EXIT_OK
 
     url = EGOV_LAWDATA_URL.format(law_id=urllib.parse.quote(law_id, safe=""))
     cache = cache_path_law(law_id)

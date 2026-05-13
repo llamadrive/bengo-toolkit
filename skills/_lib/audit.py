@@ -100,6 +100,29 @@ SESSION_TTL_SECONDS = 3600  # 1 時間
 SELF_PATH = os.path.abspath(__file__)
 
 
+def _is_cowork() -> bool:
+    """runtime.surface() == "cowork" を遅延 import して判定する。
+
+    Cowork は VM 内で動作し、ユーザーのローカル FS（`.claude-bengo/audit.jsonl`）
+    に到達できない。本関数で短絡判定し、`cmd_record` を no-op 化する。
+    """
+    import importlib
+    here = str(Path(__file__).resolve().parent)
+    added = False
+    if here not in sys.path:
+        sys.path.insert(0, here)
+        added = True
+    try:
+        rt = importlib.import_module("runtime")
+        return rt.surface() == "cowork"
+    finally:
+        if added:
+            try:
+                sys.path.remove(here)
+            except ValueError:
+                pass
+
+
 def _load_workspace_module():
     """workspace.py を遅延ロードする。"""
     import importlib
@@ -817,6 +840,16 @@ def cmd_record(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 1
+
+    # Cowork surface ではローカル `.claude-bengo/audit.jsonl` に到達できないため
+    # silent skip する。SKILL.md 側の Bash 呼び出しを書き換えなくて済むよう、
+    # 監査機構自体を surface-aware にする。本番運用は Claude Code 側で行われる。
+    if _is_cowork():
+        print(
+            json.dumps({"audit": "skipped (cowork)", "event": args.event}, ensure_ascii=False),
+            file=sys.stderr,
+        )
+        return 0
 
     # v3.0.0: workspace resolution.
     # v3.3.0: 監査無効化は **本番では禁じる**。`config.audit_enabled=false` を

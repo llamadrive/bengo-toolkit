@@ -1,15 +1,32 @@
 ---
 description: タスクから bengo-toolkit の機能を探す対話型メニュー
+allowed-tools: Bash(python3 skills/_lib/menu.py:*), Bash(python3 skills/_lib/workspace.py:*)
 ---
 
 bengo-toolkit には 23 コマンドがあるが、弁護士が覚えるべきなのは `/help` ただ 1 つ。
 このコマンドは「今日何をしたい？」をタスク別に聞き、該当する機能へ誘導する。
 
+## Step 0: surface-aware メニュー出力（決定論的）
+
+まず以下を実行してメニュー本文を取得する。Python が surface（Code / Cowork）に
+応じた menu を render するため、Claude 側で出し分けを判断しない。
+
+```
+Bash: python3 skills/_lib/menu.py print-help "$ARGUMENTS"
+```
+
+出力は **そのままユーザーへ verbatim に表示する**（編集・要約しない）。
+Cowork 環境では blocked skill が menu から自動的に除外される。
+
+その後、ユーザーが番号を選んだら下記「数字を選んだ場合の分岐」に従って案内する。
+
 ## $ARGUMENTS の扱い
 
-- **引数なし** → 下記のタスクメニューを表示し、数字または自由記述で選んでもらう
-- **`--all`** → 23 コマンド全件を機能カテゴリ別に表形式で出力
+- **引数なし** → menu.py が表示するタスクメニュー（surface 別）
+- **`--all`** → 23 コマンド全件（Cowork では blocked に "Claude Code 限定" 印）
 - **タスク記述（例: 「離婚調停」「過払金」「戸籍」）** → 該当機能へ直接ナビゲート
+  （ただし Cowork で blocked skill にマッチした場合は `workspace.py check --require`
+  を呼び、exit 2 なら stdout の友好的メッセージをそのまま表示して停止する）
 
 ## タスクメニュー（引数なしの場合）
 

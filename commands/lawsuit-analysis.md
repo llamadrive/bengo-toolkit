@@ -10,4 +10,16 @@ MCP Apps 対応環境（Claude Desktop, Cursor 等）では自動的にインラ
 
 $ARGUMENTS: 文書ファイルのパスまたはディレクトリ（任意。なければ対話で確認）。
 
+## Step 0: 動作環境ガード
+
+```
+Bash: python3 skills/_lib/workspace.py check --require local_fs --require docx_mcp --require agent_format_mcp
+```
+
+- exit 0 → 次の Step へ進む
+- exit 2 → stdout の日本語メッセージをそのままユーザーへ表示して停止
+- exit 1 → stderr の error JSON をユーザーに伝えて停止
+
+## Step 1
+
 まず `skills/lawsuit-analysis/SKILL.md` を Read ツールで読み込み、そこに記載された手順に従って実行する。

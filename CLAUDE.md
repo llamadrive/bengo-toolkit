@@ -78,6 +78,12 @@ bengo-toolkit — 法律事務所向け Claude Code プラグイン v3.7.0
 **スラッシュコマンドを強制せず**、ユーザーが「◯◯したい」と言ったら即座に該当スキルを
 呼ぶか、複数候補がある場合は 1 つに絞る確認質問を返す。
 
+**Cowork 環境での扱い (v3.7.1〜):**
+マッチした skill が Cowork で blocked（[COWORK_SUPPORT.md](./COWORK_SUPPORT.md) の
+✗ 印）の場合、skill を呼ぶ前に必ず `python3 skills/_lib/workspace.py check --require <cap>` を実行する。
+exit code が 2 なら stdout の友好的メッセージをそのまま user に表示して停止する（Claude Code への誘導付き）。
+slash command と自然文の両方を同じ guard 経路に通すことで UX の整合性を保つ。
+
 | ユーザー発話の典型 | 提案する機能 |
 |---|---|
 | 「離婚したい」「離婚の準備」「慰謝料」「親権」 | `/property-division-calc` + `/child-support-calc` + 離婚協議書テンプレート |

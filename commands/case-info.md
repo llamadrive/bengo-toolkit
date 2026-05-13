@@ -1,6 +1,6 @@
 ---
 description: 現在の案件フォルダ（workspace）の状態を表示する
-allowed-tools: Read, Bash(python3 skills/_lib/workspace.py info:*), Bash(python3 skills/_lib/audit.py verify:*)
+allowed-tools: Read, Bash(python3 skills/_lib/workspace.py:*), Bash(python3 skills/_lib/audit.py verify:*)
 ---
 
 現在の CWD（または指定ディレクトリ）の workspace 状態を要約する。bengo-toolkit
@@ -12,6 +12,16 @@ allowed-tools: Read, Bash(python3 skills/_lib/workspace.py info:*), Bash(python3
 
 - **引数なし**: 現在の workspace を対象に
 - **`--verify`**: ハッシュチェーンの整合性も併せて検証する
+
+## Step 0: 動作環境ガード
+
+```
+Bash: python3 skills/_lib/workspace.py check --require local_fs
+```
+
+- exit 0 → 次の Step へ進む
+- exit 2 → stdout の日本語メッセージをそのままユーザーへ表示して停止
+- exit 1 → stderr の error JSON をユーザーに伝えて停止
 
 ## 動作
 
