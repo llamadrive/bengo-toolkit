@@ -83,6 +83,7 @@ Cowork では上記いずれも利用不可。
 | `/audit-config` | ✗ | `local_fs` |
 | `/case-info` | ✗ | `local_fs` |
 | `/verify` | ✗ | `local_fs` + 全 MCP |
+| `/report-issue` | ✗ | `local_fs`（下書きを `~/.claude-bengo/reports/` に書き出すため） |
 
 ### メニュー
 

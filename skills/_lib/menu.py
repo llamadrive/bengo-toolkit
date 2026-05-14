@@ -129,6 +129,7 @@ ALL_COMMANDS: List[Tuple[str, str, str]] = [
     # メンテナンス
     ("/quickstart", "60 秒で試す（同梱サンプル）", "any"),
     ("/verify", "動作確認", "code"),
+    ("/report-issue", "不具合の報告・機能の要望をフォームから送る（GitHub 不要）", "code"),
     ("/help", "このメニュー", "any"),
 ]
 

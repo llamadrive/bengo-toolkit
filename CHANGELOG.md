@@ -4,6 +4,27 @@
 
 ## [Unreleased]
 
+## [3.7.8] - 2026-05-14
+
+### Added
+
+- **`/report-issue`** — 不具合の報告・機能の要望・感想を GitHub アカウント
+  なしで送るためのスラッシュコマンド。利用者から種別と本文を聞き取り、
+  プラグイン版・OS・実行環境などの自動診断情報を統合した Markdown 形式の
+  下書きを `~/.claude-bengo/reports/feedback_<日時>.md` に書き出す。下書きは
+  OS 既定のテキストエディタ（macOS: TextEdit / Windows: メモ帳 / Linux:
+  `xdg-open`）で自動的に開く。同時に
+  [llama-drive.com/bengo-toolkit/feedback](https://llama-drive.com/bengo-toolkit/feedback)
+  のフィードバックフォームをブラウザで開く（種別・診断情報は URL の
+  query param で渡してフォーム側が自動入力する）。利用者はエディタの本文を
+  コピーしてフォームに貼り付け、内容を確認してから送信する。プラグインが
+  自動送信することはなく、本文は URL に乗らないため、ブラウザ履歴や
+  サーバアクセスログには本文が残らない。
+- **`skills/_lib/report.py`** — 上記コマンドの実装本体。`emit` サブコマンドで
+  下書きの書き出し・エディタ起動・ブラウザ起動を担当する。本文はファイル
+  経由または stdin で受け取り、URL には乗せない。`--no-open` で SSH / CI 等
+  ヘッドレス環境向けにエディタ・ブラウザ起動を抑止できる。
+
 ## [3.7.7] - 2026-05-14
 
 ### Fixed
