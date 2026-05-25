@@ -161,6 +161,11 @@ def pin() -> int:
 
 
 def main() -> int:
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, OSError):
+            pass
     ap = argparse.ArgumentParser(description="MCP サーバ依存パッケージの整合性検証")
     ap.add_argument("--pin", action="store_true", help="現行 npm 公開値で pin を更新する")
     args = ap.parse_args()
