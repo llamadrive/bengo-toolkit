@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## [3.7.9] - 2026-05-30
+
+### Added
+
+- **`/feedback`** — `/report-issue` のエイリアス。`feedback` という語から
+  コマンドを探す利用者が多いため、同一の動作をする別名コマンドを追加した。
+  挙動は `/report-issue` と完全に同一で、内部的に同じ
+  `skills/report-issue/SKILL.md` の手順を実行する。
+
+### Fixed
+
+- **`scripts/verify_mcp_integrity.py`** — 日本語 Windows（cp932）で
+  `UnicodeEncodeError` により MCP 整合性チェックが一度も走らなかった問題を
+  修正。`main()` 冒頭で stdout/stderr を UTF-8 に再構成する（既存の
+  `scripts/verify.py` と同じ手法）。(#23, thanks @Just2enough)
+
 ## [3.7.8] - 2026-05-14
 
 ### Added
