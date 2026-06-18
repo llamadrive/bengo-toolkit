@@ -4,6 +4,46 @@
 
 ## [Unreleased]
 
+## [3.8.0] - 2026-06-18
+
+### Changed
+
+- **`/family-tree` / `/lawsuit-analysis` の成果物を `.agent` から自己完結 HTML に変更。**
+  これまでの `.agent` は専用レンダラ（MCP Apps / 公開 web ビューア）がある環境
+  でしか開けず、Claude Code ターミナルでは「開けない不明なファイル」として
+  残っていた。成果物を、描画エンジン（`@agent-format/renderer` + `jp-court`）を
+  inline した**単一の `.html`** に変更した:
+  - 特別なソフトなしにダブルクリックで開け、⌘P で裁判所提出用 PDF にでき、
+    メール添付でそのまま共有できる。
+  - MCP・公開ビューアと同一の描画エンジンを使うため、書式（最後の住所・出生・
+    死亡・（被相続人）ラベル、二重線配偶者エッジ等）は完全に一致する。
+  - CSP `connect-src 'none'` により、ファイルは外部に一切通信しない（弁護士法
+    23条 守秘義務）。従来の公開ビューア経路にあった、ブラウザ履歴同期（Chrome
+    Sync 等）で URL ごと案件データが外部アカウントへ上がる懸念を解消した。
+  - **どのホストでもユーザーに残るのは `.html` 1 ファイルのみ**で、生成時に自動で
+    既定ブラウザに表示する（開けない環境ではパス表示にフォールバック）。`.agent`
+    は使い捨ての描画エンジン入力で、生成後に必ず削除する。外部ツール連携対応
+    ホスト（Claude Desktop / Cursor 等）では削除前に in-chat のインライン描画にも
+    使う（ブラウザを開けないホスト向けの予備表示）。
+
+### Added
+
+- **`skills/_lib/agent_html/`** — 自己完結 HTML 生成の部品一式。
+  - `build_html.py`（実行時。Node・ネットワーク不要）: `.agent` から `.html` を
+    組み立てる。`build --open` で生成 HTML を既定ブラウザに自動表示、`--prune-agent`
+    で内部入力の `.agent` を削除する。`host` は描画ホスト（cli / inline）を判定する。
+  - `dist/renderer_bundle.js` + `renderer_styles.css`（コミット済み成果物）:
+    react + react-dom + 描画エンジンを esbuild で 1 バンドル化したもの。
+  - `build_bundle.mjs` / `package.json` / `README.md` — バンドル再生成は
+    `@agent-format/*` のバージョンを上げたときだけ行う開発タスク。
+- **`tests/agent_html.sh`** — 描画部品の存在・ホスト判定・CSP 埋め込み・完全
+  自己完結性・`--prune-agent` の挙動を検証する。
+
+### Fixed
+
+- `/family-tree` の成果物が、レンダラのない環境で開けないままユーザーに渡る
+  問題を解消（ユーザー報告）。
+
 ## [3.7.9] - 2026-05-30
 
 ### Added

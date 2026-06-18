@@ -55,7 +55,7 @@ python3 skills/_lib/workspace.py info
   監査ログ:        ~/cases/smith-v-jones/.claude-bengo/audit.jsonl
   件数:            127
   直近イベント:
-    - 2026-04-19 14:30: family-tree file_write (family_tree_2026-04-19.agent)
+    - 2026-04-19 14:30: family-tree file_write (family_tree_2026-04-19.html)
     - 2026-04-19 14:28: family-tree file_read (戸籍.pdf)
     - 2026-04-19 10:15: typo-check file_write (訴状_reviewed.docx)
     - 2026-04-19 10:10: typo-check file_read (訴状.docx)

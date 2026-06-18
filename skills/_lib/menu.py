@@ -224,13 +224,13 @@ def _render_help_all(surface: str, plain: bool) -> str:
 # (option_label, title, detail, required_surface)
 QUICKSTART_OPTIONS = [
     ("戸籍から相続関係説明図を描く",
-     "サンプル戸籍 PDF から .agent を生成。ブラウザでツリー表示。", "code"),
+     "サンプル戸籍 PDF から自己完結 HTML を生成。ブラウザでツリー表示。", "code"),
     ("PDF から XLSX 書式へ自動入力",
      "訴状 PDF から当事者・事件番号・請求額を抽出し、書式の該当セルへ記入。", "code"),
     ("準備書面の校正（修正履歴付き）",
      "サンプル DOCX に対して Word 修正履歴で誤字・用語を指摘。", "code"),
     ("訴状と答弁書から事件分析レポート",
-     "タイムライン・登場人物・認否を .agent で可視化。", "code"),
+     "タイムライン・登場人物・認否を自己完結 HTML で可視化。", "code"),
     ("条文を引く（民法709条）",
      "e-Gov API から条文を整形表示。案件登録不要・即動作。", "any"),
     ("法定相続分を計算（配偶者＋子3人、1人放棄）",

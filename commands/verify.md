@@ -1,6 +1,6 @@
 ---
 description: bengo-toolkit プラグインの動作確認テストを実行
-allowed-tools: Read, Write, Glob, mcp__xlsx-editor__get_workbook_info, mcp__xlsx-editor__read_sheet, mcp__docx-editor__get_document_info, mcp__docx-editor__read_document, mcp__agent-format__render_agent_inline, Bash(python3 scripts/verify.py:*), Bash(python3 scripts/verify_mcp_integrity.py:*), Bash(python3 skills/_lib/audit.py --self-test:*), Bash(python3 skills/_lib/first_run.py --self-test:*), Bash(python3 skills/_lib/workspace.py:*), Bash(python3 skills/_lib/runtime.py:*), Bash(python3 skills/_lib/menu.py:*)
+allowed-tools: Read, Write, Glob, mcp__xlsx-editor__get_workbook_info, mcp__xlsx-editor__read_sheet, mcp__docx-editor__get_document_info, mcp__docx-editor__read_document, mcp__agent-format__render_agent_inline, Bash(python3 scripts/verify.py:*), Bash(python3 scripts/verify_mcp_integrity.py:*), Bash(python3 skills/_lib/audit.py --self-test:*), Bash(python3 skills/_lib/first_run.py --self-test:*), Bash(python3 skills/_lib/workspace.py:*), Bash(python3 skills/_lib/runtime.py:*), Bash(python3 skills/_lib/menu.py:*), Bash(python3 skills/_lib/agent_html/build_html.py:*), Bash(bash tests/agent_html.sh:*)
 ---
 
 bengo-toolkit の各機能の動作を確認する。

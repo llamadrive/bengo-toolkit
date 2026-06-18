@@ -21,7 +21,8 @@ MCP サーバの疎通と fixtures の存在を確認する。
 0.5. **MCP サプライチェーン整合性（v3.3.0〜 必須）:** `python3 scripts/verify_mcp_integrity.py` を実行し、`.mcp.json` の各依存パッケージの npm integrity が `scripts/mcp_pinned.json` と一致することを確認する。不一致の場合は他の検証に進まず、即座にサプライチェーン改ざんの可能性を報告する（機密文書処理を継続してはならない）。
 1. `mcp__xlsx-editor__get_workbook_info` を任意の fixtures XLSX に対して呼び出し、応答を確認する。
 2. `mcp__docx-editor__get_document_info` を任意の fixtures DOCX に対して呼び出し、応答を確認する。
-3. `mcp__agent-format__render_agent_inline` に極小の `.agent` 文書（例: `{"version":"0.1","name":"ping","createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z","config":{"proactive":false},"sections":[],"memory":{"observations":[],"preferences":{}}}`）を渡して、応答が返ることを確認する。
+3. `mcp__agent-format__render_agent_inline` に極小の `.agent` 文書（例: `{"version":"0.1","name":"ping","createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z","config":{"proactive":false},"sections":[],"memory":{"observations":[],"preferences":{}}}`）を渡して、応答が返ることを確認する。**この MCP は任意項目**（family-tree / lawsuit-analysis の成果物は自己完結 HTML で生成するため、本 MCP は MCP Apps でのインライン描画にのみ使う）。未設定なら WARNING 扱いで先に進む。
+3.5. **自己完結 HTML 描画エンジン（family-tree / lawsuit-analysis の成果物経路、必須）:** `python3 skills/_lib/agent_html/build_html.py host` が `cli` または `inline` を返し、`skills/_lib/agent_html/dist/renderer_bundle.js` と `renderer_styles.css` が存在することを確認する。`bash tests/agent_html.sh` を実行すれば、極小の `.agent` から生成した HTML に `connect-src 'none'`（CSP）と描画エンジンが inline されること・外部リソースを一切参照しないことまで一括検証できる。
 4. Glob で `fixtures/` 配下の各サブディレクトリにファイルが存在することを確認する。
 5. Glob で `templates/_schema.yaml` が存在することを確認する。
 6. Glob で `skills/*/SKILL.md` を検索し、見つかったスキルを列挙する。件数はハードコードしない — Glob の結果をそのまま使う。
@@ -33,7 +34,8 @@ MCP サーバの疎通と fixtures の存在を確認する。
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   [1] xlsx-editor MCP ............. OK
   [2] docx-editor MCP ............. OK
-  [3] agent-format MCP ............ OK
+  [3] agent-format MCP ............ OK（任意・インライン描画用）
+  [3b] 自己完結HTML描画エンジン ... OK
   [4] fixtures .................... OK ({N} dirs)
   [5] templates ................... OK
   [6] skills ...................... OK ({M} skills)

@@ -61,8 +61,8 @@ Cowork では上記いずれも利用不可。
 | Command | Cowork | 必要 capability |
 |---|:---:|---|
 | `/typo-check` | ✗ | `local_fs` + `docx_mcp` |
-| `/family-tree` | ✗ | `local_fs` + `agent_format_mcp` |
-| `/lawsuit-analysis` | ✗ | `local_fs` + `docx_mcp` + `agent_format_mcp` |
+| `/family-tree` | ✗ | `local_fs`（成果物の自己完結 HTML は同梱描画エンジンで生成。`agent_format_mcp` は MCP Apps でのインライン描画にのみ任意で使う） |
+| `/lawsuit-analysis` | ✗ | `local_fs` + `docx_mcp`（`agent_format_mcp` は同上、任意） |
 
 ### テンプレート
 

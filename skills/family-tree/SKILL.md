@@ -176,7 +176,7 @@ python3 skills/_lib/audit.py record --skill family-tree --event file_read --file
 
 ### Step 3.5: 出典（source_ref）の必須検証
 
-**このステップを完了するまで Step 4（.agent 出力）に進んではならない。** 裁判所提出用 相続関係説明図に ハルシネーションした人物・関係性が混入すると懲戒・損害賠償事案に直結するため、ハルシネーション除去ではなく**プログラム的出典強制**で防ぐ。
+**このステップを完了するまで Step 4（成果物生成）に進んではならない。** 裁判所提出用 相続関係説明図に ハルシネーションした人物・関係性が混入すると懲戒・損害賠償事案に直結するため、ハルシネーション除去ではなく**プログラム的出典強制**で防ぐ。
 
 各 person と各 relationship に `source_ref` を**必須**として付与する:
 
@@ -213,16 +213,22 @@ python3 skills/_lib/audit.py record --skill family-tree --event file_read --file
 
 **検証プロトコル:**
 
-1. 全 persons に `source_ref.pdf` / `source_ref.page` / `source_ref.quote` が揃っているか確認する。欠落があれば、その人物は戸籍から実在を確認できていない可能性が高いため、**ユーザーに該当人物を提示して削除するか補足情報を求める。** 削除も補足もなければ `.agent` を出力しない。
+1. 全 persons に `source_ref.pdf` / `source_ref.page` / `source_ref.quote` が揃っているか確認する。欠落があれば、その人物は戸籍から実在を確認できていない可能性が高いため、**ユーザーに該当人物を提示して削除するか補足情報を求める。** 削除も補足もなければ成果物を生成しない。
 2. 全 relationships に `source_ref` が揃っているか確認する。欠落があれば同上。
 3. 各 `source_ref.quote` が実際に PDF 該当ページにある文字列か、Read ツールで PDF の該当ページを読み直して照合する（spot check: 抽出された 1/3 程度の source_ref をランダムに検証する）。
 4. 検証が完了したら、Step 4 に進む。`source_ref` 自体は `.agent` の payload には含めず（裁判所提出 PDF に Internal metadata を残さないため）、Step 5 のサマリー JSON にのみ保持する。
 
 **この検証をスキップした場合、裁判所提出書面にハルシネーションが混入する直接的原因になる。** `--skip-source-ref-verification` のような抜け道は提供しない（意図的判断で裁判所提出を後回しにする場合はユーザーが source_ref を手入力すればよい）。
 
-### Step 4: `.agent` ファイル出力（単一出力）
+### Step 4: 成果物の生成（自己完結 HTML を既定とする）
 
-家族関係図は **`.agent` ファイルの単一出力**とし、閲覧手段は環境に応じて使い分ける。`.agent` が canonical representation で、HTML は自動生成せず web viewer から生成可能（PDF ボタン）。
+家族関係図の成果物は **自己完結 HTML（`.html`）** を既定とする。描画エンジン・スタイル・データを 1 ファイルに inline するため、弁護士は特別なソフトなしにダブルクリックで開け、メールに添付でき、ブラウザの ⌘P で裁判所提出用 PDF にできる。第三者サイトにもネットワークにも依存しない（CSP `default-src 'none'` / `connect-src 'none'` で fetch・XHR 等のネットワーク送信と外部リソース読込を遮断する。本 HTML は通信を一切行わない）。
+
+`.agent`（agent-format JSON）は描画エンジンへの**入力データ**であり、ユーザーには残さない（HTML 生成後に必ず削除する）。外部ツール連携に対応したホスト（Claude Desktop / Cursor 等）では、削除前に in-chat のインライン描画にも使う。
+
+手順: Step 3 のデータから `.agent` を組み立てる（Step 4-1）→ そこから自己完結 HTML を生成する（Step 4-2）→ 描画ホストに応じて `.agent` の残し方を決める（Step 4-3）。
+
+#### Step 4-1: agent-format JSON（描画エンジン入力）の構築
 
 **Step 3 で構築した FlatPerson / Relationship を以下のスキーマの単一 section にラップする。`description` フィールドは含めない**（agent-format renderer がタイトル直下に冗長テキストを表示するため、裁判所提出文書の見た目を崩す）。section label のみでコンテキストを示す。
 
@@ -275,7 +281,7 @@ python3 skills/_lib/audit.py record --skill family-tree --event file_read --file
 のみを制御し、renderer が人物をフィルタしない（SPEC § 4）— 書式の違いは
 persons 配列の中身だけで表現する。
 
-Write ツールで `family_tree_{YYYY-MM-DD}.agent` として作業ディレクトリに出力する。
+Write ツールで `family_tree_{YYYY-MM-DD}.agent` として作業ディレクトリに出力する（描画エンジンへの入力。最終成果物は Step 4-2 の `.html`）。
 
 **AI 生成ドラフト警告（必須、全出力に含める）:** `.agent` の `memory.observations`
 の最初に以下の **プレーン文字列** を必ず挿入する（renderer が最上位にバナー表示するため）。
@@ -294,57 +300,73 @@ upstream の `AgentMemory.observations` は `array<string>` であり、`{id, te
 **schema の正式仕様:** https://github.com/knorq-ai/agent-format/blob/main/schemas/agent.schema.json
 **実例参照:** https://github.com/knorq-ai/agent-format/blob/main/examples/inheritance-jp-3gen.agent
 
+#### Step 4-2: 自己完結 HTML（成果物）の生成
+
+成果物は常に `.html` の 1 ファイルとし、可能なら自動でブラウザに表示する。`.agent`
+は使い捨ての描画エンジン入力で、**ユーザーには残さない**（どのホストでも作業
+ディレクトリに残るのは `.html` だけ）。
+
+**(任意・予備表示) 外部ツール連携対応ホストでの in-chat インライン描画:**
+ブラウザを開けないホスト（Claude Desktop / Cursor 等の MCP Apps）向けに、HTML 生成
+の前にインライン描画しておく:
+
+```bash
+python3 skills/_lib/agent_html/build_html.py host    # inline か cli を判定
+```
+
+`inline` のときのみ、`render_agent_file` に `family_tree_{YYYY-MM-DD}.agent` を渡して
+インライン描画する。**必ず次の build より前に行う**（build で `.agent` を削除する
+ため）。`cli` のときはスキップする。
+
+**HTML 生成・自動表示・内部入力の削除（全ホスト共通）:**
+
+```bash
+python3 skills/_lib/agent_html/build_html.py build --input family_tree_{YYYY-MM-DD}.agent --open --prune-agent
+```
+
+- 出力: `family_tree_{YYYY-MM-DD}.html`（作業ディレクトリに残る唯一の成果物）。
+- `--open`: 既定ブラウザでローカル HTML を自動的に開く。開けない環境（SSH / CI 等）では自動でパス表示にフォールバックする。
+- `--prune-agent`: 内部入力の `.agent` を削除し、ユーザーに残るのを `.html` だけにする。
+- MCP・公開ビューアと同一の `@agent-format/renderer` + `jp-court` で描画するため書式は完全一致し、ネットワーク通信は一切行わない。
+
 #### 監査ログ
 
-`.agent` ファイル 1 件を記録する:
+成果物の `.html` を記録する:
 
 ```bash
-python3 skills/_lib/audit.py record --skill family-tree --event file_write --file "family_tree_{YYYY-MM-DD}.agent"
+python3 skills/_lib/audit.py record --skill family-tree --event file_write --file "family_tree_{YYYY-MM-DD}.html"
 ```
-
-#### ブラウザで viewer を自動起動
-
-出力直後に `open_viewer.py` を `--auto` フラグ付きで呼ぶ。**Claude Code CLI (`$CLAUDECODE=1`) の場合のみ**ユーザーの既定ブラウザで viewer を起動し、それ以外（Claude Desktop / Cursor 等の MCP Apps 経由）ではブラウザ起動を抑止して URL を stdout に出す。
-
-Claude Desktop 内で `render_agent_file` を使ってインライン描画するシナリオで、2 重にブラウザタブが開くのを防ぐ。
-
-ファイル内容は URI-encode して URL ハッシュに載せるため、viewer のサーバ（GitHub Pages）には payload が送信されない（hash fragment はクライアントに留まる）。
-
-```bash
-python3 skills/family-tree/open_viewer.py --input family_tree_{YYYY-MM-DD}.agent --auto
-```
-
-**フラグの動作:**
-
-| フラグ | 動作 |
-|---|---|
-| `--auto` | `$CLAUDECODE=1` 時のみブラウザ起動、それ以外は URL 印字 |
-| `--no-open` | 常に URL 印字のみ（SSH / CI / ヘッドレス環境用） |
-| （無指定） | 環境を問わず常にブラウザ起動を試みる（既定） |
-
-**Windows 注意:** 12KB を超える URL では Windows の一部ブラウザ経路で切り詰めが発生する可能性がある。警告を stderr に出すが、万一ブランクページが開いたら `--no-open` で URL を取得し viewer にドラッグ&ドロップでフォールバック。
 
 #### ユーザーへの案内
 
 ```
-相続関係説明図を `family_tree_{YYYY-MM-DD}.agent` に出力した。
+相続関係説明図を family_tree_{YYYY-MM-DD}.html に出力し、ブラウザで開いた。
 
-  📱 Claude Desktop / Cursor 等 MCP Apps 対応クライアント:
-     render_agent_file ツールでインライン描画される。@agent-format/
-     mcp@0.1.9）は jp-court 視覚プラグインを同梱しているため、インライン描画
-     でも web viewer と同じ Japanese 法定体裁（最後の住所・出生・死亡・
-     （被相続人）ラベル、二重線配偶者エッジ、白パネル背景）で表示される。
-     section 右端の PDF エクスポートボタンも動作する。
-
-  🌐 ブラウザ viewer（Claude Code 時は自動起動、MCP Apps 時は URL を印字）:
-     https://knorq-ai.github.io/agent-format/ — インライン描画と同一のレンダリング
-     パイプライン。
-     - 右上「Load another」で別の .agent を読込
-     - section 右端「⬇ PDF」で A3 横の印刷用 HTML をダウンロード
-       → ブラウザで開いて ⌘P で PDF 保存（裁判所提出用）
+  ・特別なソフトは不要。自動で開かなかった場合もダブルクリックで開ける。
+  ・裁判所・法務局提出用の PDF は、開いたページで ⌘P（Windows は Ctrl+P）→
+    「PDF として保存」、または図の右上「⬇ PDF」ボタンから。
+  ・このファイルは外部に通信しないため、メールにそのまま添付して共有できる。
 ```
 
-**なぜ HTML を直接出力しないか:** agent-format web viewer の「PDF」ボタンが必要な時だけ on-demand で同等の HTML を生成する。Claude Code が毎回 HTML を吐き出すと token 浪費 + ファイル数増。`.agent` を canonical とし、印刷 HTML は viewer 側の on-demand 生成に委ねる単一責務設計。
+#### （任意）共有用ビューア URL
+
+ファイルではなく URL で同僚に渡したい場合のみ、第三者ビューア（GitHub Pages）を
+使える。**既定では使わない**:
+
+```bash
+python3 skills/family-tree/open_viewer.py --input family_tree_{YYYY-MM-DD}.agent --no-open
+```
+
+注意: URL ハッシュに案件データが載るため、ブラウザの履歴同期（Chrome Sync 等）
+経由で外部アカウントへアップロードされうる。機密案件では使わず、自己完結 HTML を
+共有する。この URL を使う場合は Step 4-2 の build で `--prune-agent` を外し、
+`.agent` を残しておくこと。
+
+**なぜ自己完結 HTML を既定にするか:** 弁護士の成果物は「開けて・印刷でき・
+共有できる」必要がある。`.agent` 単体はそれを満たさず（専用レンダラがある環境
+でしか開けない）、第三者ビューア経由は履歴同期で守秘義務に抵触しうる。描画
+エンジンを inline した HTML は、依存ゼロ・完全ローカル・書式同一の 3 点を同時に
+満たす。
 
 ### Step 5: データサマリー
 

@@ -40,7 +40,7 @@ Bash: python3 skills/_lib/menu.py print-quickstart "$ARGUMENTS"
   どれを見たい？（同梱サンプルで動かすので、あなたのファイルは一切必要ない）
 
   1. 戸籍から相続関係説明図を描く
-     → サンプル戸籍 PDF から .agent を生成。ブラウザでツリー表示。
+     → サンプル戸籍 PDF から自己完結 HTML を生成。ブラウザでツリー表示。
 
   2. PDF から XLSX 書式へ自動入力
      → 訴状 PDF から当事者・事件番号・請求額を抽出し、
@@ -50,7 +50,7 @@ Bash: python3 skills/_lib/menu.py print-quickstart "$ARGUMENTS"
      → サンプル DOCX に対して Word 修正履歴で誤字・用語を指摘。
 
   4. 訴状と答弁書から事件分析レポート
-     → タイムライン・登場人物・認否を .agent で可視化。
+     → タイムライン・登場人物・認否を自己完結 HTML で可視化。
 
   5. 条文を引く（民法709条）
      → e-Gov API から条文を整形表示。案件登録不要・即動作。
@@ -124,11 +124,11 @@ FIXTURE="${CLAUDE_PLUGIN_ROOT}/fixtures/family-tree/koseki-simple.pdf"
   `python3 skills/_lib/workspace.py init --cwd <tmp> --title demo` を呼んで
   workspace を初期化する（audit ログと成果物がそのフォルダに閉じる）。
 - その tmp フォルダを cwd として `/family-tree fixtures/family-tree/koseki-simple.pdf` を実行
-- 出力 `.agent` を開いて:
+- 出力 `.html` を開いて:
   ```
-  できた ← family_tree_YYYY-MM-DD.agent
-  Claude Desktop なら render_agent_file でこのまま表示。Claude Code
-  （CLI）なら `open_viewer.py --input <file> --auto` でブラウザが自動起動。
+  できた ← family_tree_YYYY-MM-DD.html
+  ダブルクリックで開け、⌘P で PDF 化できる単一ファイル。Claude Code なら
+  自動でブラウザに表示する。Claude Desktop ではインライン描画も行う。
 
   この品質で自分の戸籍に試す？（y/n）
   ```
@@ -152,7 +152,7 @@ FIXTURE="${CLAUDE_PLUGIN_ROOT}/fixtures/family-tree/koseki-simple.pdf"
 **4. 訴訟分析:**
 - `fixtures/lawsuit-analysis/complaint.pdf` + `answer.pdf` を使う
 - 試用フォルダ（mktemp）を cwd として `/lawsuit-analysis fixtures/lawsuit-analysis/complaint.pdf fixtures/lawsuit-analysis/answer.pdf`
-- 出力 `lawsuit_report_YYYY-MM-DD.agent` を提示
+- 出力 `lawsuit_report_YYYY-MM-DD.html` を提示
 - follow-up: 「自分の訴訟記録で試す？ → 案件フォルダに `cd` してから再実行」
 
 **5. 条文検索:**

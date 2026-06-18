@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<!--
+  Content-Security-Policy: this document is fully self-contained and makes no
+  network calls. default-src 'none' (with explicit connect-src 'none') blocks
+  all network requests — fetch / XHR / WebSocket / beacon — and all external
+  resource loads, so the koseki / litigation data it carries stays local
+  (弁護士法23条 守秘義務). 'unsafe-inline' is required only because the bundle
+  and data are inlined; production React uses no eval, so 'unsafe-eval' is
+  deliberately omitted. Note: a <meta>-delivered CSP cannot block top-level
+  navigation (the `sandbox` directive is ignored via <meta>), so this mitigates
+  rather than absolutely prevents exfiltration by a compromised script; the
+  bundle is built offline from pinned deps (see build_bundle.mjs) to keep that
+  trust boundary tight.
+-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; child-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%%TITLE%%</title>
+<style>%%STYLES%%</style>
+<style>html,body{margin:0;padding:16px;background:#fff;font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic",sans-serif}</style>
+</head>
+<body>
+<div id="bengo-root"></div>
+<script id="bengo-agent-data" type="application/json">%%AGENT_JSON%%</script>
+<script>%%BUNDLE%%</script>
+<script>
+(function () {
+  var raw = document.getElementById("bengo-agent-data").textContent;
+  var data = JSON.parse(raw);
+  window.__bengoMountAgent(data, document.getElementById("bengo-root"));
+})();
+</script>
+</body>
+</html>

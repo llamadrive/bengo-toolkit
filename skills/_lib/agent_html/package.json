@@ -1,0 +1,19 @@
+{
+  "name": "bengo-agent-html-bundler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only build for the vendored offline renderer bundle used to produce self-contained .html legal diagrams. NOT installed or run at plugin runtime — the built artifacts in dist/ are committed and read by build_html.py.",
+  "scripts": {
+    "build": "node build_bundle.mjs"
+  },
+  "dependencies": {
+    "@agent-format/jp-court": "0.1.4",
+    "@agent-format/renderer": "0.1.8",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}
