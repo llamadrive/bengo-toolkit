@@ -3,7 +3,7 @@ description: タスクから bengo-toolkit の機能を探す対話型メニュ�
 allowed-tools: Bash(python3 skills/_lib/menu.py:*), Bash(python3 skills/_lib/workspace.py:*)
 ---
 
-bengo-toolkit には 25 コマンドがあるが、弁護士が覚えるべきなのは `/help` ただ 1 つ。
+bengo-toolkit には 26 コマンドがあるが、弁護士が覚えるべきなのは `/help` ただ 1 つ。
 このコマンドは「今日何をしたい？」をタスク別に聞き、該当する機能へ誘導する。
 
 ## Step 0: surface-aware メニュー出力（決定論的）
@@ -23,7 +23,7 @@ Cowork 環境では blocked skill が menu から自動的に除外される。
 ## $ARGUMENTS の扱い
 
 - **引数なし** → menu.py が表示するタスクメニュー（surface 別）
-- **`--all`** → 25 コマンド全件（Cowork では blocked に "Claude Code 限定" 印）
+- **`--all`** → 26 コマンド全件（Cowork では blocked に "Claude Code 限定" 印）
 - **タスク記述（例: 「離婚調停」「過払金」「戸籍」）** → 該当機能へ直接ナビゲート
   （ただし Cowork で blocked skill にマッチした場合は `workspace.py check --require`
   を呼び、exit 2 なら stdout の友好的メッセージをそのまま表示して停止する）
@@ -144,11 +144,12 @@ v3.0.0 で旧 matter ID 概念は廃止された。**フォルダ = 案件**。
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  全 25 コマンド（カテゴリ別）
+  全 26 コマンド（カテゴリ別）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 【案件フォルダ】
   /case-info        現在の案件フォルダの状態を表示
+  /env              環境（案件・プラン・拡張・外部ツール・守り）を一目で見える化
   /audit-config     監査ログ設定（記録先・HMAC・クラウド同期）
 
 【テンプレート】

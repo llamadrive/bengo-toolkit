@@ -103,6 +103,7 @@ HELP_CATEGORIES: List[Tuple[str, str, str, str, str]] = [
 ALL_COMMANDS: List[Tuple[str, str, str]] = [
     # 案件フォルダ / workspace
     ("/case-info", "現在の案件フォルダの状態を表示", "code"),
+    ("/env", "環境（案件・プラン・拡張・外部ツール・守り）を一目で見える化", "code"),
     ("/audit-config", "監査ログ設定（記録先・HMAC・クラウド同期）", "code"),
     # テンプレート
     ("/template-install", "同梱書式から選択してインストール", "code"),
@@ -292,6 +293,7 @@ def _self_test() -> int:
         "lawsuit-analysis",
         "audit-config",
         "case-info",
+        "env",
         "verify",
     )
 
