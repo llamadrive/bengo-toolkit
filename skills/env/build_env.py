@@ -178,8 +178,8 @@ def build_agent(cwd: Path) -> dict:
             "id": "sec-features", "type": "table", "label": "できること（この端末で使える主な機能）", "icon": "🛠", "order": 2,
             "data": {
                 "columns": [
-                    {"id": "feature", "name": "機能", "type": "text"},
-                    {"id": "desc", "name": "説明", "type": "text"},
+                    {"key": "feature", "label": "機能", "type": "text"},
+                    {"key": "desc", "label": "説明", "type": "text"},
                 ],
                 "rows": [{"id": f"f{i}", "feature": f, "desc": d} for i, (f, d) in enumerate(_FEATURES)],
             },
@@ -188,8 +188,8 @@ def build_agent(cwd: Path) -> dict:
             "id": "sec-mcp", "type": "table", "label": "つながっている外部の道具", "icon": "🔌", "order": 3,
             "data": {
                 "columns": [
-                    {"id": "tool", "name": "道具・用途", "type": "text"},
-                    {"id": "state", "name": "状態", "type": "text"},
+                    {"key": "tool", "label": "道具・用途", "type": "text"},
+                    {"key": "state", "label": "状態", "type": "text"},
                 ],
                 "rows": [{"id": r["id"], "tool": r["tool"], "state": r["state"]} for r in mcp_rows]
                         or [{"id": "none", "tool": "（設定された外部ツールなし）", "state": "—"}],
