@@ -12,6 +12,10 @@ informational notice である:
   - 確認キーワード・パスフレーズ・ブロッキングは一切なし
   - 2 回目以降は silently exit 0
 
+加えて `notice` は毎回、**個人プラン（Pro/Max）利用中なら 1 行だけ注意**する
+（機密案件では事務所の商用アカウントを使うよう促す非ブロッキングなナッジ。
+`plan-check` サブコマンドで単独実行も可能）。
+
 状態は `~/.claude-bengo/global.json` の `first_run_notice_shown_at` に記録する。
 """
 
@@ -116,6 +120,34 @@ def reset() -> Dict[str, object]:
     return {"reset": removed}
 
 
+def consumer_plan_warning():
+    """個人プラン（Pro/Max）利用中なら 1 行の注意文を返す。判定できなければ None。
+
+    機密スキルの Step 0 で毎回呼ばれる想定の**非ブロッキング**チェック。個人プランは
+    設定によってはやり取りが学習に使われ得るため、機密案件では事務所の商用アカウントを
+    使うよう促す。`claude` CLI が無い / 応答しない環境では黙って None を返す（処理を止めない）。
+    """
+    import subprocess
+    try:
+        r = subprocess.run(
+            ["claude", "auth", "status", "--json"],
+            capture_output=True, text=True, timeout=8,
+        )
+        if r.returncode != 0 or not r.stdout.strip():
+            return None
+        data = json.loads(r.stdout)
+    except Exception:  # noqa: BLE001 — 環境依存の失敗は握りつぶして続行
+        return None
+    st = str(data.get("subscriptionType") or "").lower()
+    if st in ("max", "pro"):
+        return (
+            f"⚠ 個人プラン（{st}）で利用中です。機密案件では事務所の商用アカウント"
+            "（Team / Enterprise）をお使いください。個人プランは設定によっては"
+            "やり取りが学習に使われることがあります。"
+        )
+    return None
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -130,10 +162,21 @@ def _cmd_notice(args: argparse.Namespace) -> int:
         print(json.dumps({"first_run": "skipped (cowork)"}, ensure_ascii=False), file=sys.stderr)
         return 0
     st = notice_status()
-    if st["shown"] and not args.force:
-        return 0
-    print(NOTICE_TEXT)
-    mark_shown()
+    if not st["shown"] or args.force:
+        print(NOTICE_TEXT)
+        mark_shown()
+    # 初回案内の表示有無に関わらず、個人プラン利用中なら毎回 1 行だけ注意する（非ブロッキング）。
+    warn = consumer_plan_warning()
+    if warn:
+        print(warn)
+    return 0
+
+
+def _cmd_plan_check(args: argparse.Namespace) -> int:
+    """個人プラン利用中なら 1 行注意を出す。それ以外は silent（exit 0）。"""
+    warn = consumer_plan_warning()
+    if warn:
+        print(warn)
     return 0
 
 
@@ -178,6 +221,9 @@ def _self_test() -> int:
             ws.GLOBAL_ROOT = orig_gr
             ws.GLOBAL_CONFIG_FILE = orig_gc
 
+    w = consumer_plan_warning()
+    check("4. consumer_plan_warning returns str or None (non-blocking)", w is None or isinstance(w, str))
+
     print(f"\nfirst_run self-test: {ok}/{ok + fail} passed")
     return 0 if fail == 0 else 1
 
@@ -193,6 +239,7 @@ def main() -> int:
 
     sub.add_parser("status", help="JSON で現在の案内表示状態を返す").set_defaults(func=_cmd_status)
     sub.add_parser("reset", help="shown フラグを削除（テスト用）").set_defaults(func=_cmd_reset)
+    sub.add_parser("plan-check", help="個人プラン利用中なら 1 行注意を出す（非ブロッキング）").set_defaults(func=_cmd_plan_check)
 
     args = ap.parse_args()
     if args.self_test:
