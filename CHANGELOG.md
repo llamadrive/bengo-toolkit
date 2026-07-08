@@ -4,6 +4,25 @@
 
 ## [Unreleased]
 
+## [3.8.1] - 2026-07-08
+
+### Fixed
+
+- **`/lawsuit-analysis` の訴訟分析レポートで、table セクション（登場人物・主張と認否・証拠一覧）が空欄になる不具合を修正。**
+  `.agent` の table スキーマが同梱の描画エンジン（`renderer_bundle.js`）と乖離していた。
+  renderer は列を `key` / `label` で読むが SKILL.md の例が `id` / `name` を指定していたため、
+  列見出しが空・セル値が `row[undefined]` で空になっていた。あわせて認否（`status` 列）の
+  値をオブジェクト `{ "state": "認める" }` 形式に修正した。エラーは出ずサイレントに空欄に
+  なるため、既存の v3.8.0 install では気付きにくかった。
+
+- **`/verify` の agent-format MCP 接続テストが、有効な `.agent` を渡しても常に検証エラーを
+  返す不具合を修正。** 接続テストを `render_agent_inline`（`data` 引数）から
+  `render_agent_file`（`path` 引数、同梱 fixture）に切り替えた。`render_agent_inline` は
+  上流の既知不具合（`data` の型無し宣言により MCP クライアントが文字列化し、サーバ側の
+  `typeof data === "object"` 判定に落ちる）で内容非依存に失敗する。実スキル
+  （family-tree / lawsuit-analysis / env）は元から `render_agent_file` を使うため、
+  成果物・実インライン描画には影響しなかった（本修正は `/verify` の自己診断のみ）。
+
 ## [3.8.0] - 2026-06-18
 
 ### Changed
