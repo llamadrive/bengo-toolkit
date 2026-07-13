@@ -1,6 +1,6 @@
 ---
 description: 60 秒で試す — 同梱サンプルで bengo-toolkit の出力品質を確認する
-allowed-tools: Bash(python3 skills/_lib/menu.py:*)
+allowed-tools: Bash(python3 skills/_lib/menu.py:*), Bash(python3 skills/_lib/workspace.py:*), Bash(python3 skills/_lib/copy_file.py:*)
 ---
 
 ## Step 0: surface-aware メニュー出力（決定論的）
@@ -144,9 +144,13 @@ FIXTURE="${CLAUDE_PLUGIN_ROOT}/fixtures/family-tree/koseki-simple.pdf"
 
 **3. 校正:**
 - `fixtures/typo-check/brief-with-errors.docx` を使う
-- 試用フォルダ（mktemp）を cwd として `/typo-check fixtures/typo-check/brief-with-errors.docx` 実行
+- 試用フォルダ（mktemp）を cwd とし、同梱サンプルをそのフォルダへ複製してから実行する
+  （プラグインの `fixtures/` を汚さず、成果物を tmp に閉じるため）:
+  `python3 skills/_lib/copy_file.py --src fixtures/typo-check/brief-with-errors.docx --dst <tmp>/brief-with-errors.docx`
+  → `/typo-check <tmp>/brief-with-errors.docx` 実行
+- typo-check は原本を編集せず複製 `<tmp>/brief-with-errors_reviewed.docx` を作って校正する
 - 出力 `brief-with-errors_reviewed.docx` の修正履歴を `mcp__docx-editor__read_document` で
-  1-2 段落ぶんだけサンプル表示
+  1-2 段落ぶんだけサンプル表示（原本 `brief-with-errors.docx` は無変更のまま）
 - follow-up: 「自分の書面で試す？ → 案件フォルダに `cd` してから再実行」
 
 **4. 訴訟分析:**
