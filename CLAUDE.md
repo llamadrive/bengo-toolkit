@@ -5,7 +5,7 @@
 ユーザーがこのプラグインを初めて使用する場合（会話の最初のメッセージで法律関連の作業を依頼された場合、または「何ができる？」「使い方は？」と聞かれた場合）、以下の案内を日本語で表示する:
 
 ```
-bengo-toolkit — 法律事務所向け Claude Code プラグイン v3.8.1
+bengo-toolkit — 法律事務所向け Claude Code プラグイン v3.8.2
 
 まず試したい?  /quickstart と打つだけ。同梱サンプルで 60 秒で出力を見せる。
 気に入ったら自分の案件に進める。事前登録は一切不要。
@@ -134,7 +134,7 @@ slash command と自然文の両方を同じ guard 経路に通すことで UX �
 ## 出力命名規則
 
 - テンプレート入力結果: `{workspace_root}/outputs/{template_id}_filled_{YYYYMMDD_HHMMSS}.xlsx`（v3.2.0〜、毎回新規ファイル・衝突時は `_2` `_3` … を自動付与）
-- 校正結果: `{元ファイル名}_reviewed.docx`
+- 校正結果: `{元ファイル名}_reviewed.docx`（原本を編集せず、まず複製を作ってから複製に対して修正履歴付きで校正する。原本 DOCX はバイト単位で無変更に保つ）
 - 家族関係図: `family_tree_{YYYY-MM-DD}.html`（成果物 = 描画エンジンを inline した自己完結 HTML。依存ゼロで開け・生成時に自動でブラウザ表示・⌘P で PDF 化でき・メール添付で共有でき・外部通信しない。`.agent` は使い捨ての描画エンジン入力で生成後に削除する。ユーザーの作業ディレクトリに残るのは `.html` のみ。MCP Apps 対応ホストでは削除前にインライン描画にも使う）
 - 訴訟分析レポート: `lawsuit_report_{YYYY-MM-DD}.html`（同上、6 section: metrics / report / timeline / table×3）
 
